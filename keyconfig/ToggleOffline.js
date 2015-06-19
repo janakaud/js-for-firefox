@@ -1,0 +1,1 @@
+BrowserOffline.toggleOfflineStatus();
