@@ -1,9 +1,9 @@
 head = document.getElementsByTagName('head')[0];
-scripts = head.getElementsByTagName('script');
-for(i = 0; i < scripts.length; i++) {
+scripts = document.getElementsByTagName('script');
+var l = scripts.length;
+for(i = 0; i < l; i++) {
 	script = scripts[i];
 	if(script.src) {
-		head.removeChild(script);
 		s = document.createElement('script');
 		s.type = "text/javascript";
 		p = script.src.indexOf('?');
@@ -14,11 +14,11 @@ for(i = 0; i < scripts.length; i++) {
 }
 
 head = document.getElementsByTagName('head')[0];
-links = head.getElementsByTagName('link');
-for(i = 0; i < links.length; i++) {
+links = document.getElementsByTagName('link');
+var l = links.length;
+for(i = 0; i < l; i++) {
 	link = links[i];
 	if(link.rel == "stylesheet") {
-		head.removeChild(link);
 		s = document.createElement('link');
 		s.rel = "stylesheet";
 		p = link.href.indexOf('?');
