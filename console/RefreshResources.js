@@ -26,3 +26,27 @@ for(i = 0; i < l; i++) {
 		head.appendChild(s);
 	}
 }
+
+
+//open in new tab
+scripts = document.scripts;
+var l = scripts.length;
+var w = [];
+for(i = 0; i < l; i++) {
+	script = scripts[i];
+	if(script.src) {
+		w[i] = window.open(script.src);
+		setInterval("w[" + i + "].close()", 10000);
+	}
+}
+css = document.styleSheets;
+var l = css.length;
+var w = [];
+for(i = 0; i < l; i++) {
+	script = css[i];
+	if(script.href) {
+		w[i] = window.open(script.href);
+		setInterval("w[" + i + "].close()", 10000);
+	}
+}
+

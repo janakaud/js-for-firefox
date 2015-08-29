@@ -1,5 +1,5 @@
 window.toggleService.toggle('media', function(channel) {
-	if(channel.URI.spec.match(/\b(woff|ttf|mp3|ico|translate\.google\.com|google-analytics\.com|facebook\.com\/plugins\/like(box)?\.php)\b/))
+	if(channel.URI.spec.match(/\b(woff|ttf|mp3|ico|translate\.google\.com|(fonts|maps)\.googleapis\.com|google-analytics\.com|facebook\.com\/plugins\/like(box)?\.php)\b/))
 		channel.cancel(Components.results.NS_BINDING_ABORTED);
 }, {
 	title: "Media Blocked",
