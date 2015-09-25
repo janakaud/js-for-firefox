@@ -7,7 +7,7 @@
 // @grant		none
 // ==/UserScript==
 
-setTimeout(function(e) {
+setTimeout(function() {
 	for (var i = 0; i < document.links.length; i++) {
 		var url = document.links[i].href;
 		var start = url.indexOf('/l.php?u=');

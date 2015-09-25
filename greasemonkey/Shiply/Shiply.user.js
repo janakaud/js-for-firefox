@@ -155,6 +155,22 @@ function go(s) {
 var base = 'http://www.shiply.com/';
 var ls = window.localStorage;
 
+function goNext() {
+	var pages = JSON.parse(ls.items);
+	if (pages) {
+		pages = pages.splice(1);
+console.log(pages.length + ' pages');
+		if (pages.length == 0) {	//end
+console.log('end');
+			delete ls.items;
+		} else {
+console.log('nextpage');
+			ls.items = JSON.stringify(pages);
+			document.location.href = pages[0];
+		}
+	}
+}
+
 //time-based expiry; valid for only 5 minutes
 var d = new Date().getTime();
 if (d - ls.last > 300000) {
@@ -177,7 +193,7 @@ setTimeout(function() {
 			delete ls.automatic;
 		}
 
-	} else if (endpoint.startsWith('search')) {
+	} else if (endpoint.startsWith('search') || endpoint.startsWith('listings/search')) {
 		//quit if manual
 		if (!ls.automatic) {
 			return;
@@ -190,15 +206,24 @@ setTimeout(function() {
 		for (var i = 0; i < list.length; i++) {
 			var from = c0(c0(list[i], 'mobile-from-address'), 'search-cell-box-content-address').innerHTML;
 			var to = c0(c0(list[i], 'mobile-to-address'), 'search-cell-box-content-address').innerHTML;
-			if (go(from) && go(to)) {   //ZIP code match
+			if (go(from) && go(to)) {	//ZIP code match
 				pages.push(c0(list[i], 'search-cell-box-content-link').href);
 			}
 		}
 console.log(pages.length + ' pages');
 
-		ls.items = JSON.stringify(pages);   //save URLs
+		//add next search page URL, if pagination not over
+		var toPg = id('paginateResultsTo').innerHTML.replace(",", "");
+console.log('to ' + toPg);
+console.log('total ' + id('paginateResultsTotal').innerHTML);
+		if (parseInt(toPg) < parseInt(id('paginateResultsTotal').innerHTML.replace(",", ""))) {
+			pages.push(base + 'listings/search/' + toPg);
+console.log('nextsearch ' + toPg);
+		}
+
+		ls.items = JSON.stringify(pages);	//save URLs
 		if (pages.length > 0) {
-			document.location.href = pages[0];   //open first
+			document.location.href = pages[0];	//open first
 		}
 
 	} else if (endpoint.startsWith('transport/')) {
@@ -208,28 +233,33 @@ console.log('transport');
 			return;
 		}
 
-		//if we have already submitted, ignore this page and proceed
+		//if no other bids, or if we have already submitted, ignore and proceed
 console.log('bidders');
-		var bidders = c(document, 'profile-link-a');
-		for (var i = 0; i < bidders.length; i++) {
+		var bidders = c(document, 'tp-profile-anchor');
+		var skip = false;
+		if (bidders.length == 0) {	//no bids?
+console.log('nobids');
+			skip = true;
+		}
+
+		var oldBid = false;
+		var oldBidValue = Number.POSITIVE_INFINITY;
+		//each listing has 2 nodes with tp-profile-anchor class
+		for (var i = 0; !skip && i < bidders.length; i += 2) {
 			if (ourName == bidders[i].innerHTML) {
-                //remove current URL, go to next
-console.log('this done');
-				var pages = JSON.parse(ls.items);
-				if (pages) {
-					pages = pages.splice(1);
-console.log(pages.length + ' pages');
-					if (pages.length == 0) {   //end
-console.log('end');
-						delete ls.items;
-					} else {
-console.log('nextpage');
-						ls.items = JSON.stringify(pages);
-						document.location.href = pages[0];
-					}
+				oldBid = true;
+				var value = parseFloat(c0(bidders[i].parentElement.parentElement.parentElement, 'net-quote-amount-text').innerHTML.match(/\d+/g))
+				if (oldBidValue > value) {	//pick lowest of old bids
+					oldBidValue = value;
 				}
-				return;
+console.log('oldbid ' + oldBidValue);
 			}
+		}
+
+		//remove current URL, go to next
+		if (skip) {
+			goNext();
+			return;
 		}
 
 		//pick min price among others
@@ -250,10 +280,21 @@ console.log('quote');
 		}
 console.log('min ' + min);
 
+		//if we have an old bid, make sure min is < 95% of old bid
+		if (oldBid && min >= oldBidValue * 0.95) {
+			goNext();
+			return;
+		}
+
 		//submit
 		id('formBidAdditional').value = msg;
 		id('formBidAmount').value = min;
+		if (id('formBidVehicleId').value == "") {
+console.log('vehiclepick');
+			alert("Missing vehicle! Please select one and submit the form to continue.")
+		} else {
 console.log('submit');
-		id('form-place-bid').submit();
+//			id('form-place-bid').submit();
+		}
 	}
 }, 1000);

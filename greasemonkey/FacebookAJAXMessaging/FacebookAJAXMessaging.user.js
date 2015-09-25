@@ -2,7 +2,7 @@
 // @name        FacebookAJAXMessaging
 // @namespace   com.tuna
 // @description Asynchronous message sending for Facebook Mobile (doesn't update replies)
-// @include     http*://*.facebook.com/messages/*
+// @include     http*://*.facebook.com/messages/read*
 // @version     1
 // @grant       none
 // ==/UserScript==

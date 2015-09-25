@@ -13,7 +13,14 @@ setTimeout(function(e) {
 		var start = url.indexOf('q=');
 		if (start > 0) {
 			var end = url.indexOf('&sa=');
-			document.links[i].href = decodeURIComponent(url.substring(start + 2, end));
+			url = decodeURIComponent(url.substring(start + 2, end));
+			start = url.indexOf('u=');
+			if (start > 0) {
+				end = url.indexOf('&source=');
+				url = decodeURIComponent(url.substring(start + 2, end));
+			}
+			url = url.replace(/\/en.wikipedia.org\//, '/en.m.wikipedia.org/')
+			document.links[i].href = url;
 		}
 	}
 }, 500);

@@ -4,6 +4,7 @@
 // @description	Cancel tripleclicks.com footer load (with Google Translate) and periodic auction updates
 // @include		https://www.tripleclicks.com/*
 // @include		http://www.tripleclicks.com/*
+// @include		https://tripleclicks.com/*
 // @version		1
 // @grant		none
 // ==/UserScript==
