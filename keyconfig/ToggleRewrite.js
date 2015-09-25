@@ -7,7 +7,7 @@ window.toggleService.toggle('rw', function(channel) {
 	}
 	if(!url.match(/\b\.(js|css)\?\b/))
 		return;
-	param = url.match(/\b(date|v|ver|_|_v|t|_t|timestamp)\b=[-a-z0-9.]{2,}&?|\?_?[a-z0-9]+$/);
+	param = url.match(/\b(date|v|ver|_|_v|t|_t|timestamp)\b=[-a-z_0-9.]{2,}&?|\?_?[a-z_0-9]+$/);
 	if(!param)
 		return;
 	url = url.replace(param[0], '');
