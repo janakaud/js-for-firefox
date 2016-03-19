@@ -2,7 +2,7 @@
 // @name        FacebookCSS
 // @namespace   com.tuna
 // @description Removes offensive CSS class that limits Facebook message pane width
-// @include     https://x.facebook.com/messages*
+// @include     https://x.facebook.com/*
 // @version     1
 // @grant       none
 // ==/UserScript==

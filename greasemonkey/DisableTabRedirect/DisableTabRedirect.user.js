@@ -3,6 +3,7 @@
 // @namespace   com.tuna
 // @description Disables redirects on tab clicks in TC product pages
 // @include     https://www.tripleclicks.com/detail.php?item=*
+// @include     https://www.tripleclicks.com/detail?item=*
 // @version     1
 // @grant       none
 // ==/UserScript==

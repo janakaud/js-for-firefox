@@ -8,8 +8,10 @@
 // ==/UserScript==
 
 setTimeout(function(e) {
-	for (var i = 0; i < document.links.length; i++) {
-		var url = document.links[i].href;
+	var elems = document.getElementsByClassName("web_result");
+	for (var i = 0; i < elems.length; i++) {
+		var a = elems[i].children[0].children[0];
+		var url = a.href;
 		var start = url.indexOf('q=');
 		if (start > 0) {
 			var end = url.indexOf('&sa=');
@@ -18,9 +20,15 @@ setTimeout(function(e) {
 			if (start > 0) {
 				end = url.indexOf('&source=');
 				url = decodeURIComponent(url.substring(start + 2, end));
+			} else {
+				start = url.indexOf('lite_url=');
+				if (start > 0) {
+					end = url.indexOf('&ei=');
+					url = decodeURIComponent(url.substring(start + 9, end));
+				}
 			}
 			url = url.replace(/\/en.wikipedia.org\//, '/en.m.wikipedia.org/')
-			document.links[i].href = url;
+			a.href = url;
 		}
 	}
 }, 500);
