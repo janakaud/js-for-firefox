@@ -3,14 +3,14 @@ if (!isOffline) {
 	BrowserOffline.toggleOfflineStatus();
 }
 if (window.jsDown) {
-	toggleJS();
+	window.toggleJS();
 }
 if (window.cssDown) {
-	toggleCSS();
+	window.toggleCSS();
 }
 content.document.location.reload();
-setInterval(function() {
-	toggleJS();
-	toggleCSS();
+setTimeout(function() {
+	window.toggleJS();
+	window.toggleCSS();
 	BrowserOffline.toggleOfflineStatus();
-}, 2000);
+}, 3000);

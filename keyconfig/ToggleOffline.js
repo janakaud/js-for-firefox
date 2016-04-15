@@ -1,7 +1,7 @@
 // notification generator
 window.__notifyElem = window.__notifyElem || Cc["@mozilla.org/alerts-service;1"].getService(Components.interfaces.nsIAlertsService).showAlertNotification;
 window.notify = window.notify || function(enabled, title, body) {
-	__notifyElem("chrome://mozapps/skin/extensions/alerticon-info-" + (enabled ? "positive" : "negative") + ".png", title, body, false, "", null, "");
+	__notifyElem("chrome://mozapps/skin/extensions/alerticon-info-" + (enabled ? "positive" : "negative") + ".svg", title, body, false, "", null, "");
 };
 
 BrowserOffline.toggleOfflineStatus();
@@ -89,7 +89,7 @@ if(!window.toggleJS) {
 	shft = [false, true, true, true];
 	for(i = 0; i < 4; i++) {
 		e = content.document.createEvent("KeyboardEvent");
-		e.initKeyEvent("keypress", true, true, window, ctrl[i], alt[i], shft[i], false, Components.interfaces.nsIDOMKeyEvent.DOM_VK_SPACE, 0)
+		e.initKeyEvent("keypress", true, true, window, ctrl[i], alt[i], shft[i], false, 0, 32)
 		content.document.dispatchEvent(e);
 	}
 }

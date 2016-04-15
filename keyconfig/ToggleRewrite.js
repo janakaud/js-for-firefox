@@ -8,6 +8,8 @@ window.toggleRW = window.toggleRW || function() {
 		}
 		if(url.match(/\bhackerrank\.com\b|\/posts\/\d+\/comments/))	// HackerRank/StackExchange
 			channel.URI.spec = url.replace(/&?_=\d+/, '').replace(/\?$/, '');
+		else if(url.match(/\bappengine\.google\.com\/(css|js)/))	// Old AppEngine
+			channel.URI.spec = url.replace(/\d+\-[0-9a-z]+\.\d+\./, '');
 		if(!url.match(/\b\.(js|css)\?\b/))
 			return;
 		param = url.match(/\b(date|v|r|ver|version|_|_v|t|_t|timestamp|build|b)\b=[-a-z_0-9.]+&?|\?_?[a-z_0-9]+$/);
