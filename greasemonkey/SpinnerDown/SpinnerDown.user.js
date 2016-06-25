@@ -2,6 +2,7 @@
 // @name        SpinnerDown
 // @namespace   com.tuna
 // @description stops the spinner on Confluence pages, consuming CPU
+// @include     http://docs.adroitlogic.org/*
 // @include     https://cwiki.apache.org/confluence/display/STRATOS/*
 // @version     1
 // @grant       none
