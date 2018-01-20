@@ -1,4 +1,4 @@
-window._regexChannels = window._regexChannels || /slack\.com\/api\/api\.test|(client-channel|clients\d|hangouts)\.google\.com|mail\.google\.com\/mail\/u\/0\/\?|trello\.com\/1\/(Session|batch)/;
+window._regexChannels = window._regexChannels || /slack\.com\/(templates\.php\?cb=|api\/api\.test)|(client-channel|clients\d|hangouts)\.google\.com|mail\.google\.com\/mail\/u\/0\/\?|trello\.com\/1\/(Session|batch)|\/youtrack\/(_events\?|rest\/(statistics|profile\/hasUnseenFeatures))/;
 window.toggleChannels = window.toggleChannels || function() {
 	toggleService.toggle('channels', function(channel) {
 		if(channel.URI.spec.match(_regexChannels))

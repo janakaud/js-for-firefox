@@ -10,73 +10,79 @@ window._rwImgSrch = window._rwImgSrch || /www\.google\.[a-z]*\/async\/imgrc\?/;
 window._rwReddit = window._rwReddit || /redditstatic\.com\//;
 window._rwMozMedia = window._rwMozMedia || /mozilla\.org\/media\//;
 window._rwCSSJSPNG = window._rwCSSJSPNG || /\b(js|css|png)\b/;
-window._rwCSSJSIgnore = window._rwCSSJSIgnore || /\/xjs\/_\/js\//;
+window._rwCSSJSIgnore = window._rwCSSJSIgnore || /google\.\w+\/search\?|\/xjs\/_\/js\//;
 window._rwCustomReq = window._rwCustomReq || /\/users\/codeheart\/requests\?/;
-window._rwParams = window._rwParams || /\b(date|version|timestamp|buildTime|build-number|build|tseed|ver|cx|_v|_t|v|t|_|r|b|u|q)\b=[-a-z_0-9.:]+&?|\?_?[a-z_0-9]+$/g;
+window._rwParams = window._rwParams || /\b(date|version|timestamp|buildTime|build-number|build|tseed|ver|cx|_v|_t|v|t|_|r|b|u|q|cb)\b=[-a-z_0-9.:]+&?|\?_?[a-z_0-9]+$/g;
 
 window._search = window._search || {};
 window._replace = window._replace || {};
 
 url5r = 'https://assetsv2.fiverrcdn.com/';
 window._search[url5r] = window._search[url5r] || [
-/\/conversations-\w{32}\.css/,
-/\/conversations-\w{32}\.js/,
-/\/jquery\.uploadifive-\w{32}\.js/,
-/\/application-\w{32}\.js/,
-/\/application-\w{32}\.css/,
-/\/application-deferred-\w{32}\.css/,
-/\/application-dependencies-\w{32}\.js/,
-/\/application-legacy-\w{32}\.js/,
-/\/orders-\w{32}\.css/,
-/\/orders-\w{32}\.js/,
-/\/reconnecting\.websocket-\w{32}\.js/,
-/\/global-gig-listings-\w{32}\.js/,
-/\/global-gig-listings-\w{32}\.css/,
-/\/marketplace-\w{32}\.css/,
-/\/user-dashboard-\w{32}\.css/,
-/\/jquery\.inline-alert-\w{32}\.js/,
-/\/todos-\w{32}\.js/,
-/\/page-filter-actions-\w{32}\.css/,
-/\/react-quick_responses-\w{32}\.css/,
-/\/react-quick_responses-\w{32}\.js/,
-/\/react-attachment_preview-\w{32}\.css/,
-/\/polyfills-\w{32}\.js/,
-/\/instantImpressions-\w{32}\.js/,
-/\/jquery-2.1.4.min-\w{32}\.js/,
-/\/translations.en-\w{32}\.js/,
-/\/emoji-helper-\w{32}\.js/,
-/\/popup-report-message-\w{32}\.js/,
-/\/popup-report-message-\w{32}\.css/,
-/\/footer-\w{32}\.css/,
-/\/help-menu-\w{32}\.css/,
-/\/fHelpMenu-\w{32}\.js/,
-/\/appboy.min-\w{32}\.css/,
-/\/appboy.min-\w{32}\.js/,
-/\/notification-drawer-\w{32}\.css/,
-/\/notification-drawer-\w{32}\.js/,
-/\/appboy-overrides-\w{32}\.css/,
-/\/tab-manager-\w{32}\.js/,
-/\/fiverr-realtime-\w{32}\.css/,
-/\/fRealTime-\w{32}\.js/,
-/\/requests-\w{32}\.js/,
-/\/offers-shared-\w{32}\.css/,
-/\/offers-shared-\w{32}\.js/,
-/\/react-order_notes_show-\w{32}\.css/,
-/\/react-order_notes_show-\w{32}\.js/,
-/\/global-social-sharing-\w{32}\.js/,
-/\/popup-base-\w{32}\.js/,
-/\/global-gig-cards-\w{32}\.css/,
-/\/react-inbox-\w{32}\.css/,
-/\/react-inbox-\w{32}\.js/,
-/\/todos-\w{32}\.js/,
-/\/popup-order-social-share-\w{32}\.js/,
-/\/orders-share-deliveries-\w{32}\.js/,
-/\/manage_gigs-\w{32}\.js/,
-/\/passable-\w{32}\.js/,
-/\/react-seller_profile_form_thin-\w{32}\.css/,
-/\/react-seller_profile_form_thin-\w{32}\.js/,
-/\/users-\w{32}\.css/,
-/\/users-\w{32}\.js/,
+/\/conversations-\w+\.css/,
+/\/conversations-\w+\.js/,
+/\/jquery\.uploadifive-\w+\.js/,
+/\/application-\w+\.js/,
+/\/application-\w+\.css/,
+/\/application-deferred-\w+\.css/,
+/\/application-dependencies-\w+\.js/,
+/\/application-legacy-\w+\.js/,
+/\/orders-\w+\.css/,
+/\/orders-\w+\.js/,
+/\/reconnecting\.websocket-\w+\.js/,
+/\/global-gig-listings-\w+\.js/,
+/\/global-gig-listings-\w+\.css/,
+/\/marketplace-\w+\.css/,
+/\/user-dashboard-\w+\.css/,
+/\/jquery\.inline-alert-\w+\.js/,
+/\/todos-\w+\.js/,
+/\/page-filter-actions-\w+\.css/,
+/\/react-quick_responses-\w+\.css/,
+/\/react-quick_responses-\w+\.js/,
+/\/react-attachment_preview-\w+\.css/,
+/\/polyfills-\w+\.js/,
+/\/instantImpressions-\w+\.js/,
+/\/jquery-2.1.4.min-\w+\.js/,
+/\/translations.en-\w+\.js/,
+/\/emoji-helper-\w+\.js/,
+/\/popup-report-message-\w+\.js/,
+/\/popup-report-message-\w+\.css/,
+/\/footer-\w+\.css/,
+/\/help-menu-\w+\.css/,
+/\/fHelpMenu-\w+\.js/,
+/\/appboy.min-\w+\.css/,
+/\/appboy.min-\w+\.js/,
+/\/notification-drawer-\w+\.css/,
+/\/notification-drawer-\w+\.js/,
+/\/appboy-overrides-\w+\.css/,
+/\/tab-manager-\w+\.js/,
+/\/fiverr-realtime-\w+\.css/,
+/\/fRealTime-\w+\.js/,
+/\/requests-\w+\.js/,
+/\/offers-shared-\w+\.css/,
+/\/offers-shared-\w+\.js/,
+/\/react-order_notes_show-\w+\.css/,
+/\/react-order_notes_show-\w+\.js/,
+/\/global-social-sharing-\w+\.js/,
+/\/popup-base-\w+\.js/,
+/\/global-gig-cards-\w+\.css/,
+/\/react-inbox-\w+\.css/,
+/\/react-inbox-\w+\.js/,
+/\/todos-\w+\.js/,
+/\/popup-order-social-share-\w+\.js/,
+/\/orders-share-deliveries-\w+\.js/,
+/\/manage_gigs-\w+\.js/,
+/\/passable-\w+\.js/,
+/\/react-seller_profile_form_thin-\w+\.css/,
+/\/react-seller_profile_form_thin-\w+\.js/,
+/\/users-\w+\.css/,
+/\/users-\w+\.js/,
+/\/seller-popup-\w+\.css/,
+/\/fNow-\w+\.js/,
+/\/CountryAutocomplete-\w+\.js/,
+/\/phone-verification-\w+\.js/,
+/\/templates-popups-\w+\.js/,
+/\/convDeprecationEvents-\w+\.js/
 ];
 
 urlBb = 'https://d301sr5gafysq2.cloudfront.net/';
@@ -93,13 +99,15 @@ window._search[urlBb] = window._search[urlBb] || [
 /\/dist\/webpack\/1\.chunk\.js/,
 /\/dist\/webpack\/word-diff-worker\.js/,
 /\/dist\/webpack\/locales\/en\.js/,
+/\/dist\/webpack\/dashboard\.js/,
+/\/dist\/webpack\/repo-admin\.js/,
 /\/jsi18n\/en\/djangojs\.js/
 ];
 
 urlPPal = 'https://www.paypalobjects.com/';
 window._search[urlPPal] = window._search[urlPPal] || [
-/\/web\/res\/\w{3}\/\w{29}\/css\/contextualLogin\.css/,
-/\/auth\/createchallenge\/\w{16}\/challenge.js/,
+/\/web\/res\/\w+\/\w+\/css\/contextualLogin\.css/,
+/\/auth\/createchallenge\/\w+\/challenge.js/,
 /\/js\/lib\/tealeaf-ul-prod_domcap\.min\.js/,
 /\/css\/app\.ltr\.css/,
 /\/css\/paypal-sans\.css/,
@@ -116,10 +124,10 @@ window._search[urlPPal] = window._search[urlPPal] || [
 /\/txndetails\/inc\/layout\.js/,
 /\/css\/wallet\.ltr\.css/,
 /\/js\/apps\/1\.1\.js/,
-/\/eboxapps\/css\/\w{2}\//,
-/\/eboxapps\/css\/\w{2}\//,
-/\/eboxapps\/css\/\w{2}\//,
-/\/eboxapps\/js\/\w{2}\//,
+/\/eboxapps\/css\/\w+\//,
+/\/eboxapps\/css\/\w+\//,
+/\/eboxapps\/css\/\w+\//,
+/\/eboxapps\/js\/\w+\//,
 /\/css\/app-service-nav\.ltr\.css/,
 /\/js\/index\.js/,
 ];
@@ -146,20 +154,13 @@ https://cdn.segment.com/analytics.js/v1/8Sa7pJhJNl2oAwmmg0bs5LotU31HtsmE/analyti
 
 urlSlack = 'https://a.slack-edge.com/';
 window._search[urlSlack] = window._search[urlSlack] || [
-/\/bv1-1\/webpack\.manifest\.\w{20}\.min\.js/,
-/\/cd169\/style\/rollup-plastic\.css/,
-/\/b003\/style\/libs\/lato-2-compressed\.css/,
-/\/7cf62\/style\/_helpers\.css/,
-/\/bv1-1\/emoji\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-core_required_libs\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-core_required_ts\.\w{20}\.min\.js/,
-/\/bv1-1\/handlebars_4010\.\w{20}\.min\.js/,
-/\/bv1-1\/TS\.web\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-core_web\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-secondary_a_required\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-secondary_b_required\.\w{20}\.min\.js/,
-/\/bv1-1\/application\.\w{20}\.min\.js/,
-/\/bv1-1\/slack_beacon\.\w{20}\.min\.js/,
+/\/style\/rollup-plastic\.css/,
+/\/style\/libs\/lato-2-compressed\.css/,
+/\/style\/_helpers\.css/,
+/\/style\/signin\.css/,
+/\/style\/index\.css/,
+/\/style\/sticky_nav\.css/,
+/\/style\/footer\.css/,
 /\/style\/rollup-client_core\.css/,
 /\/style\/rollup-client_primary\.css/,
 /\/style\/typography\.css/,
@@ -169,49 +170,82 @@ window._search[urlSlack] = window._search[urlSlack] || [
 /\/style\/date_picker\.css/,
 /\/style\/libs\/quill\.core\.css/,
 /\/style\/texty\.css/,
-/\/style\/libs\/lato-2-compressed\.css/,
-/\/bv1-1\/webpack\.manifest\.\w{20}\.min\.js/,
-/\/bv1-1\/bootstrap-client\.\w{20}\.min\.js/,
-/\/bv1-1\/emoji\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-core_required_libs\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-core_required_ts\.\w{20}\.min\.js/,
-/\/bv1-1\/handlebars_4010\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-client\.\w{20}\.min\.js/,
-/\/bv1-1\/TS\.highlights_briefing\.\w{20}\.min\.js/,
-/\/bv1-1\/TS\.utility\.window\.\w{20}\.min\.js/,
-/\/bv1-1\/TS\.files\.gdrive\.\w{20}\.min\.js/,
-/\/bv1-1\/TS\.files\.onedrive\.\w{20}\.min\.js/,
-/\/bv1-1\/TS\.ui\.current_status_input\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-secondary_a_required\.\w{20}\.min\.js/,
-/\/bv1-1\/rollup-secondary_b_required\.\w{20}\.min\.js/,
-/\/bv1-1\/application\.\w{20}\.min\.js/,
-/\/bv1-1\/slack_beacon\.\w{20}\.min\.js/,
-/\/bv1-1\/focus-ring\.\w{20}\.min\.js/,
-/\/bv1-1\/lz-string-[\d.]+\.worker\.\w{20,}\.js/,
-/\/bv1-1\/TS\.client\.ui\.channel_insights\.\w{20}\.min\.js/,
 /\/style\/rollup-slack_kit_legacy_adapters\.css/,
+/\/style\/account_settings\.css/,
+/\/bv1-1\/webpack\.manifest\.\w+\.min\.js/,
+/\/bv1-1\/emoji\.\w+\.min\.js/,
+/\/bv1-1\/rollup-core_required_libs\.\w+\.min\.js/,
+/\/bv1-1\/rollup-core_required_ts\.\w+\.min\.js/,
+/\/bv1-1\/handlebars_4010\.\w+\.min\.js/,
+/\/bv1-1\/TS\.web\.\w+\.min\.js/,
+/\/bv1-1\/rollup-core_web\.\w+\.min\.js/,
+/\/bv1-1\/rollup-secondary_a_required\.\w+\.min\.js/,
+/\/bv1-1\/rollup-secondary_b_required\.\w+\.min\.js/,
+/\/bv1-1\/application\.\w+\.min\.js/,
+/\/bv1-1\/slack_beacon\.\w+\.min\.js/,
+/\/bv1-1\/webpack\.manifest\.\w+\.min\.js/,
+/\/bv1-1\/bootstrap-client\.\w+\.min\.js/,
+/\/bv1-1\/emoji\.\w+\.min\.js/,
+/\/bv1-1\/rollup-core_required_libs\.\w+\.min\.js/,
+/\/bv1-1\/rollup-core_required_ts\.\w+\.min\.js/,
+/\/bv1-1\/handlebars_4010\.\w+\.min\.js/,
+/\/bv1-1\/rollup-client\.\w+\.min\.js/,
+/\/bv1-1\/TS\.highlights_briefing\.\w+\.min\.js/,
+/\/bv1-1\/TS\.utility\.window\.\w+\.min\.js/,
+/\/bv1-1\/TS\.files\.gdrive\.\w+\.min\.js/,
+/\/bv1-1\/TS\.files\.onedrive\.\w+\.min\.js/,
+/\/bv1-1\/TS\.ui\.current_status_input\.\w+\.min\.js/,
+/\/bv1-1\/rollup-secondary_a_required\.\w+\.min\.js/,
+/\/bv1-1\/rollup-secondary_b_required\.\w+\.min\.js/,
+/\/bv1-1\/application\.\w+\.min\.js/,
+/\/bv1-1\/focus-ring\.\w+\.min\.js/,
+/\/bv1-1\/lz-string-[\d.]+\.worker\.\w{20,}\.js/,
+/\/bv1-1\/TS\.client\.ui\.channel_insights\.\w+\.min\.js/,
+/\/bv1-1\/TS\.web\.account_settings\.\w+\.min\.js/,
+/\/bv1-1\/username_format\.\w+\.min\.js/,
+/\/bv1-1\/zxcvbn\.\w+\.min\.js/,
+/\/bv1-1\/format-message-parse-tokens\.\w+\.min\.js/,
+/\/bv1-1\/message-format\.\w+\.min\.js/,
+/\/bv1-1\/TS\.min\.\w+\.min\.js/,
+/\/bv1-1\/TS\.i18n\.\w+\.min\.js/,
+/\/bv1-1\/TS\.clog\.\w+\.min\.js/,
+/\/bv1-1\/signals\.\w+\.min\.js/,
+/\/bv1-1\/sticky_nav\.\w+\.min\.js/,
+/\/bv1-1\/spin\.\w+\.min\.js/,
+/\/bv1-1\/ladda\.\w+\.min\.js/,
+/\/bv1-1\/footer\.\w+\.min\.js/,
+/\/bv1-1\/jquery\.\w+\.min\.js/,
+/\/bv1-1\/Intl\.\w+\.min\.js/,
+/\/bv1-1\/warn_capslock\.\w+\.min\.js/,
+/\/bv1-1\/modern\.vendor\.\w+\.min\.js/,
+/\/bv1-1\/codemirror\.min\.\w+\.min\.js/,
+/\/bv1-1\/simple\.\w+\.min\.js/,
+/\/bv1-1\/codemirror_load\.\w+\.min\.js/,
 ];
+
+urlSlackTmpl = ".slack.com/templates.php?cb=";
+_search[urlSlackTmpl] = _search[urlSlackTmpl] || [/templates\.php\?cb=/];
 
 urleBayDev = '://ir.ebaystatic.com/rs/c/';
 window._search[urleBayDev] = window._search[urleBayDev] || [
-[/hello-\w{6}\.css/, 2],
-[/reset-\w{6}\.css/, 2],
-[/fyp-\w{6}\.css/, 2],
-[/auth-\w{6}\.css/, 2],
-[/keys-\w{6}\.css/, 2],
-[/profile-\w{6}\.css/, 2],
-/hello-\w{6}\.js/,
-/reset-\w{6}\.js/,
-/fyp-\w{6}\.js/,
-/auth-\w{6}\.js/,
-/keys-\w{6}\.js/,
-/profile-\w{6}\.js/,
+[/hello-\w+\.css/, 2],
+[/reset-\w+\.css/, 2],
+[/fyp-\w+\.css/, 2],
+[/auth-\w+\.css/, 2],
+[/keys-\w+\.css/, 2],
+[/profile-\w+\.css/, 2],
+/hello-\w+\.js/,
+/reset-\w+\.js/,
+/fyp-\w+\.js/,
+/auth-\w+\.js/,
+/keys-\w+\.js/,
+/profile-\w+\.js/,
 ];
 
 urleBay = 'https://secureir.ebaystatic.com/rs/v/';
 window._search[urleBay] = window._search[urleBay] || [
-[/\w{27}\.css/, 5],
-[/\w{27}\.js/, 7],
+[/\w+\.css/, 5],
+[/\w+\.js/, 7],
 ];
 
 urlEBForum = '://forums.developer.ebay.com/';
@@ -219,18 +253,18 @@ window._search[urlEBForum] = window._search[urlEBForum] || [/\/css\/bootstrap\.m
 
 urlGH = 'https://assets-cdn.github.com/assets/';
 window._search[urlGH] = window._search[urlGH] || [
-/mobile-\w{64}\.css/,
-/mobile-\w{64}\.js/,
-/frameworks-\w{64}\.css/,
-/frameworks-\w{64}\.js/,
-/github-\w{64}\.css/,
-/github-\w{64}\.js/,
-/compat-\w{64}\.js/,
+/mobile-\w+\.css/,
+/mobile-\w+\.js/,
+/frameworks-\w+\.css/,
+/frameworks-\w+\.js/,
+/github-\w+\.css/,
+/github-\w+\.js/,
+/compat-\w+\.js/,
 ];
 
-urlDZ1 = 'https://dz2cdn3.dzone.com/';
+urlDZ1 = '://dz2cdn3.dzone.com/';
 window._search[urlDZ1] = window._search[urlDZ1] || [[/-combined\.css/, 2]];
-urlDZ2 = 'https://dz2cdn2.dzone.com/';
+urlDZ2 = '://dz2cdn2.dzone.com/';
 window._search[urlDZ2] = window._search[urlDZ2] || [[/-combined\.js/, 2]];
 
 urlGAS = 'https://script.google.com/';
@@ -240,12 +274,69 @@ window._search[urlGAS] = window._search[urlGAS] || [
 /\/client\/js\/\d+-maestro_ide_shell_bin_i18n_maestro_ide_shell\.js/,
 /\/gwt\/googleappsscripts\.nocache\.js/,
 /\/sharing\/init/,
-/\/gwt\/\w{32}\.cache\.js/,
+/\/gwt\/\w+\.cache\.js/,
+/*
+/\/static\/\d+-Browser/,
+/\/static\/\d+-CacheService/,
+/\/static\/\d+-CalendarApp/,
+/\/static\/\d+-Charts/,
+/\/static\/\d+-GmailApp/,
+/\/static\/\d+-ContactsApp/,
+/\/static\/\d+-ContentService/,
+/\/static\/\d+-DocumentApp/,
+/\/static\/\d+-DriveApp/,
+/\/static\/\d+-FormApp/,
+/\/static\/\d+-PropertiesService/,
+/\/static\/\d+-GroupsApp/,
+/\/static\/\d+-ScriptApp/,
+/\/static\/\d+-ScriptProperties/,
+/\/static\/\d+-Session/,
+/\/static\/\d+-Session/,
+/\/static\/\d+-SpreadsheetApp/,
+/\/static\/\d+-UiApp/,
+/\/static\/\d+-UrlFetchApp/,
+/\/static\/\d+-UserProperties/,
+/\/static\/\d+-Utilities/,
+/\/static\/\d+-XmlService/,
+/\/static\/\d+-Blob/,
+/\/static\/\d+-HtmlService/,
+/\/static\/\d+-Jdbc/,
+/\/static\/\d+-LanguageApp/,
+/\/static\/\d+-LinearOptimizationService/,
+/\/static\/\d+-Ui/,
+/\/static\/\d+-LockService/,
+/\/static\/\d+-Logger/,
+/\/static\/\d+-MailApp/,
+/\/static\/\d+-Maps/,
+/\/static\/\d+-MimeType/,
+/\/static\/\d+-SlidesApp/,
+/\/static\/\d+-console/,
+/\/static\/\d+-BigNumber/,
+/\/static\/\d+-JSON/,
+/\/static\/\d+-Math/,
+/\/static\/\d+-Object/,
+/\/static\/\d+-BlobSource/,
+/\/static\/\d+-Button/,
+/\/static\/\d+-ButtonSet/,
+/\/static\/\d+-ColumnType/,
+/\/static\/\d+-DataTable/,
+/\/static\/\d+-DataTableBuilder/,
+/\/static\/\d+-DataTableSource/,
+/\/static\/\d+-DigestAlgorithm/,
+/\/static\/\d+-Menu/,
+/\/static\/\d+-Month/,
+/\/static\/\d+-PromptResponse/,
+/\/static\/\d+-User/,
+/\/static\/\d+-Weekday/,
+/\/static\/\d+-Array/,
+/\/static\/\d+-SitesApp/,
+/\/static\/\d+-CardService/,
+*/
 ];
 
 urlGooJS = 'https://www.google.com/js/';
 window._search[urlGooJS] = window._search[urlGooJS] || [
-[/\/bg\/\w{43}\.js/, 2],
+[/\/bg\/\w+\.js/, 2],
 ];
 
 urlGAPI = 'https://apis.google.com/_/scs/abc-static/';
@@ -256,8 +347,112 @@ window._search[urlGAPI] = window._search[urlGAPI] || [
 
 urlMozBug = 'https://bugzilla.mozilla.org/data/assets/';
 window._search[urlMozBug] = window._search[urlMozBug] || [
-[/\w{32}\.css/, 2],
-[/\w{32}\.js/, 4],
+[/\w+\.css/, 2],
+[/\w+\.js/, 4],
+];
+
+urlOstk = 'https://ak1.ostkcdn.com/';
+window._search[urlOstk] = window._search[urlOstk] || [
+/js\/product-page\.[.\d]+\.min\.js/,
+/css\/os-master\.[.\d]+\.min\.css/,
+/js\/overstock\.[.\d]+\.min\.js/,
+/js\/os-async\.[.\d]+\.min\.js/,
+/js\/ostk-user-tracking-all\.[.\d]+\.min\.js/,
+/js\/thirdparty\/siteIntercept\.[.\d]+\.min\.js/,
+/js\/thirdparty\/ensighten\/ensighten-bootstrap\.js/,
+/js\/thirdparty\/swf\/jwplayer\.[.\d]+\.min\.js/,
+/js\/s_code_async\.js/,
+/css\/product-page\.[.\d]+\.min\.css/,
+/js\/os-templates\.[.\d]+\.min\.js/,
+];
+
+urlMedium = 'https://cdn-static-1.medium.com/_/fp/';
+window._search[urlMedium] = window._search[urlMedium] || [
+/gen-js\/main-base\.bundle\..+\.js/,
+/gen-js\/main-common-async\.bundle\..+\.js/,
+/gen-js\/main-misc-screens\.bundle\..+\.js/,
+/gen-js\/main-notes.bundle\..+\.js/,
+/gen-js\/main-home-screens\.bundle\..+\.js/,
+/gen-js\/main-posters\.bundle\..+\.js/,
+/css\/main-branding-base\..+\.css/,
+/css\/fonts-latin-base\..+\.css/,
+/css\/fonts-base\..+\.css/,
+];
+
+urlStatCtr = 'https://statcounter.com/';
+window._search[urlStatCtr] = window._search[urlStatCtr] || [
+/\/css\/packed\/app-\w+\.css/,
+/\/css\/packed\/print-\w+\.css/,
+/\/js\/packed\/user-\w+\.js/,
+/\/js\/packed\/base-\w+\.js/,
+/\/css\/packed\/layout-\w+\.css/,
+];
+
+urlDkrHubId = "https://id.docker.com/static/";
+window._search[urlDkrHubId] = window._search[urlDkrHubId] || [
+/vendor\.\w+\.css/,
+/login\.\w+\.css/,
+/vendor\.\w+\.js/,
+/login\.\w+\.js/,
+];
+
+urlDkrHub = "https://hub.docker.com/";
+window._search[urlDkrHub] = window._search[urlDkrHub] || [
+/vendor\.\w+\.css/,
+/login\.\w+\.css/,
+/vendor\.\w+\.js/,
+/login\.\w+\.js/,
+/client\.\w+\.js/,
+/main-0-\w+\.css/,
+];
+
+urlK8sIo = "https://d33wubrfki0l68.cloudfront.net/";
+window._search[urlK8sIo] = window._search[urlK8sIo] || [
+/\w+\/css\/styles\.css/,
+];
+
+urlEc2 = "/ec2/";
+window._search[urlEc2] = window._search[urlEc2] || [
+/ec2\.nocache\.js/,
+/[^\/]{5,}\.cache\.js/,
+/\/1\.cache\.js/,
+/\/2\.cache\.js/,
+/\/3\.cache\.js/,
+/\/4\.cache\.js/,
+/\/5\.cache\.js/,
+/\/6\.cache\.js/,
+/\/7\.cache\.js/,
+/\/8\.cache\.js/,
+/\/9\.cache\.js/,
+/\/10\.cache\.js/,
+/\/11\.cache\.js/,
+/\/12\.cache\.js/,
+/\/13\.cache\.js/,
+/\/14\.cache\.js/,
+];
+
+urlEc22 = ".gz.";
+window._search[urlEc22] = window._search[urlEc22] || [
+/menu-\w+\/globalnav-\w+\.gz\.css/,
+/mezz-\w+\/custsat-\w+\.gz\.css/,
+/mezz-\w+\/custsat-\w+\.gz\.js/,
+[/mezz-\w+\/mezz-\w+.gz.js/, 2],
+/menu-\w+\/globalnav-\w+\.gz\.js/,
+/iam\/assets\/css\/bundles\/1_1505433600_270085c48f576fdeb829590f4fc80996\.css\.gz\.css/,
+/iam\/assets\/js\/bundles\/en_4_1505433600_185326f6f405fe93a05e1f0cfd76ac88\.min\.js\.gz\.js/,
+];
+
+urlEc23 = ".cloudfront.net/";
+window._search[urlEc23] = window._search[urlEc23] || [
+/versions\/live-ec2\/[\w-_]+\/Content\/text\/content_en\.js/,
+/\/amznUrchin\.js/,
+/iam\/assets\/js\/bundles\/policies.js/,
+];
+
+urlGeeks = "codegeeks.com/wp-content/cache/autoptimize/";
+window._search[urlGeeks] = window._search[urlGeeks] || [
+[/css\/autoptimize_\w+\.css/, 3],
+/js\/autoptimize_\w+\.js/
 ];
 
 window._sanitizeUrl = window._sanitizeUrl || function(url, params) {
@@ -292,15 +487,15 @@ window.toggleRW = window.toggleRW || function() {
 /*		else if(url.match(_rwGAS))
 			channel.URI.spec = url.replace(/d\/[^/]+\//, '');*/
 		else if(url.match(_rwSpring))
-			channel.URI.spec = url.replace(/-[a-z0-9]{32}\./, '.');
+			channel.URI.spec = url.replace(/-[a-z0-9]+\./, '.');
 		else if(url.match(_rwImgSrch)) {
 			csi = url.indexOf('&csi=');
 			channel.URI.spec = (url.substring(0, csi) + url.substring(url.indexOf('&', csi + 1))).replace(/cidx:\d,_id:irc_imgrc\d,_pms:s/, "cidx:2,_id:irc_imgrc2,_pms:s");
 		}
 		else if(url.match(_rwReddit))
-			channel.URI.spec = url.replace(/\.\S{11}\./, '.');
+			channel.URI.spec = url.replace(/\.\S+\./, '.');
 		else if(url.match(_rwMozMedia))
-			channel.URI.spec = url.replace(/\.\S{12}\./, '.');
+			channel.URI.spec = url.replace(/\.\S+\./, '.');
 
 		else for(k in _search) if(url.indexOf(k) > -1) {
 			s = _search[k];
@@ -336,6 +531,7 @@ window.toggleRW = window.toggleRW || function() {
 			return;
 		}
 
+		//skip sanitization unless a custom request OR a CSS/JS/PNG that's not in the ignore list
 		if((!url.match(_rwCSSJSPNG) || url.match(_rwCSSJSIgnore)) && !url.match(_rwCustomReq)) return;
 
 		params = url.match(_rwParams);

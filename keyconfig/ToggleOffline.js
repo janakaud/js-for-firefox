@@ -64,7 +64,7 @@ window.toggleService = window.toggleService || {
 					delete window[name + "Obs"];
 				}
 			}
-			l = ["JS", "CSS", "RW", "Media", "Social", "Chat", "RWOverwrite", "SameOrigin", "NoExpiry", "Service"];
+			l = ["JS", "CSS", "RW", "Media", "Social", "Channels", "RWOverwrite", "SameOrigin", "NoExpiry", "Service"];
 			for(i in l) {
 				delete window["toggle" + l[i]];
 			}
@@ -89,11 +89,11 @@ window._toggleIgnore = window._toggleIgnore || /^https?:\/\/(127\.0\.0\.1|192\.1
 
 // init and enable toggles at first call
 if(!window.toggleJS) {
-	// JS, CSS, rewrite, media, social, chat, rewrite-overwrite, no-expiry
-	alt = [true, false, true, true, false, true, true, true];
-	ctrl = [true, true, false, true, true, true, false, true];
-	shft = [false, true, true, true, false, true, true, true];
-	chr = [32, 32, 32, 32, 32, 111, 111, 112];
+	// JS, CSS, rewrite, media, social, channels, rewrite-overwrite, no-expiry, permanent-blocked, UA
+	alt = [true, false, true, true, false, true, true, true, true, true];
+	ctrl = [true, true, false, true, true, true, false, true, true, true];
+	shft = [false, true, true, true, false, true, true, true, false, false];
+	chr = [32, 32, 32, 32, 32, 111, 111, 112, 112, 117];
 	for(i = 0; i < chr.length; i++) {
 		e = document.createEvent("KeyboardEvent");
 		e.initKeyEvent("keypress", true, true, window, ctrl[i], alt[i], shft[i], false, 0, chr[i])
@@ -127,9 +127,9 @@ window.toggleOffline = window.toggleOffline || function() {
 		return;
 	}
 	toggleSlack();
-	if (!isOffline && (chatDown || slackDown)) {
+	if (!isOffline && (channelsDown || slackDown)) {
 		setTimeout(function() {
-			notify(false, "Chat Disabled", "Chats are still offline.");
+			notify(false, "Channels Disabled", "Channels are still offline.");
 		}, 2000);
 	}
 };
