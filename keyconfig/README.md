@@ -1,3 +1,5 @@
+> *NOTE:* With the [demise of KeyConfig](https://addons.mozilla.org/en-US/firefox/addon/dorando-keyconfig/reviews/924874/), all scripts have been moved into [All.js](All.js); just copy the content and paste it into the [Browser Console] right after you launch Firefox!
+
 These require the [keyconfig add-on](https://addons.mozilla.org/en-US/firefox/addon/dorando-keyconfig/). You will have to create individual shortcuts for each of the required scripts; please note, however, that the `ToggleOffline` function is mandatory for all scripts to work properly, as it performs some of the basic initializations on behalf of the other scripts.
 
 ### ToggleOffline

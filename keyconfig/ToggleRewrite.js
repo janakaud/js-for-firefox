@@ -4,13 +4,13 @@ window._rwGoogleDev = window._rwGoogleDev || /\b(cloud|developers)\.google\.com\
 window._rwMDN = window._rwMDN || /developer\.cdn\.mozilla\.net\/static\//;
 window._rwGoogleIssues = window._rwGoogleIssues || /issuetracker\.google\.com\/.+\.(css|js)?/;
 window._rwBlogger = window._rwBlogger || /www\.blogger\.com\/dyn-css\//;
-window._rwGAS = window._rwGAS || /script\.google\.com\/macros\/.+\.js/;
 window._rwSpring = window._rwSpring || /spring\.io\/.+\.(js|css)/;
 window._rwImgSrch = window._rwImgSrch || /www\.google\.[a-z]*\/async\/imgrc\?/;
 window._rwReddit = window._rwReddit || /redditstatic\.com\//;
 window._rwMozMedia = window._rwMozMedia || /mozilla\.org\/media\//;
+
 window._rwCSSJSPNG = window._rwCSSJSPNG || /\b(js|css|png)\b/;
-window._rwCSSJSIgnore = window._rwCSSJSIgnore || /google\.\w+\/search\?|\/xjs\/_\/js\//;
+window._rwCSSJSIgnore = window._rwCSSJSIgnore || /google\.\w+\/search\?|\/xjs\/_\/js\/|recaptcha\/api2\/webworker\.js/;
 window._rwCustomReq = window._rwCustomReq || /\/users\/codeheart\/requests\?/;
 window._rwParams = window._rwParams || /\b(date|version|timestamp|buildTime|build-number|build|tseed|ver|cx|_v|_t|v|t|_|r|b|u|q|cb)\b=[-a-z_0-9.:]+&?|\?_?[a-z_0-9]+$/g;
 
@@ -82,7 +82,8 @@ window._search[url5r] = window._search[url5r] || [
 /\/CountryAutocomplete-\w+\.js/,
 /\/phone-verification-\w+\.js/,
 /\/templates-popups-\w+\.js/,
-/\/convDeprecationEvents-\w+\.js/
+/\/convDeprecationEvents-\w+\.js/,
+/\/bombaMessage-\w+\.js/
 ];
 
 urlBb = 'https://d301sr5gafysq2.cloudfront.net/';
@@ -275,7 +276,6 @@ window._search[urlGAS] = window._search[urlGAS] || [
 /\/gwt\/googleappsscripts\.nocache\.js/,
 /\/sharing\/init/,
 /\/gwt\/\w+\.cache\.js/,
-/*
 /\/static\/\d+-Browser/,
 /\/static\/\d+-CacheService/,
 /\/static\/\d+-CalendarApp/,
@@ -290,7 +290,6 @@ window._search[urlGAS] = window._search[urlGAS] || [
 /\/static\/\d+-GroupsApp/,
 /\/static\/\d+-ScriptApp/,
 /\/static\/\d+-ScriptProperties/,
-/\/static\/\d+-Session/,
 /\/static\/\d+-Session/,
 /\/static\/\d+-SpreadsheetApp/,
 /\/static\/\d+-UiApp/,
@@ -331,7 +330,6 @@ window._search[urlGAS] = window._search[urlGAS] || [
 /\/static\/\d+-Array/,
 /\/static\/\d+-SitesApp/,
 /\/static\/\d+-CardService/,
-*/
 ];
 
 urlGooJS = 'https://www.google.com/js/';
@@ -465,37 +463,45 @@ window._sanitizeUrl = window._sanitizeUrl || function(url, params) {
 	return url.endsWith('?') ? url.substring(0, url.length - 1) : url;
 };
 
+window._redir = window._redir || function(channel, url) {
+	origUrl = channel.URI;
+	if (origUrl.spec === url)	// already redirected
+		return;
+	channel.redirectTo(origUrl.mutate().setSpec(url).finalize());
+};
+
 window.toggleRW = window.toggleRW || function() {
 	toggleService.toggle('rw', function(channel) {
 		url = channel.URI.spec;
-		if (url.match(_toggleIgnore))
+		//console.debug(url, "start");
+		if (url.match(_toggleIgnore)) {
+			//console.debug(url, "ignored");
 			return;
+		}
 		if(url.match(_rwHackerStack))
-			channel.URI.spec = url.replace(/&?_=\d+/, '').replace(/\?$/, '');
+			_redir(channel, url.replace(/&?_=\d+/, '').replace(/\?$/, ''));
 		else if(url.match(_rwGAE))
-			channel.URI.spec = url.replace(/\d+\-[0-9a-z]+\.\d+\./, '');
+			_redir(channel, url.replace(/\d+\-[0-9a-z]+\.\d+\./, ''));
 		else if(url.match(_rwGoogleDev)) {
 			pos = url.indexOf("/", url.indexOf("_static"));
-			channel.URI.spec = url.substring(0, pos) + url.substring(url.indexOf("/", pos + 1));
+			_redir(channel, url.substring(0, pos) + url.substring(url.indexOf("/", pos + 1)));
 		}
 		else if(url.match(_rwMDN))
-			channel.URI.spec = url.replace(/[0-9a-z]+\.js/, 'js').replace(/[0-9a-z]+\.css/, 'css');
+			_redir(channel, url.replace(/[0-9a-z]+\.js/, 'js').replace(/[0-9a-z]+\.css/, 'css'));
 		else if(url.match(_rwGoogleIssues))
-			channel.URI.spec = url.substring(0, url.lastIndexOf('?'));
+			_redir(channel, url.substring(0, url.lastIndexOf('?')));
 		else if(url.match(_rwBlogger))
-			channel.URI.spec = url.substring(0, url.indexOf("?"));
-/*		else if(url.match(_rwGAS))
-			channel.URI.spec = url.replace(/d\/[^/]+\//, '');*/
+			_redir(channel, url.substring(0, url.indexOf("?")));
 		else if(url.match(_rwSpring))
-			channel.URI.spec = url.replace(/-[a-z0-9]+\./, '.');
+			_redir(channel, url.replace(/-[a-z0-9]{32}\./, '.'));
 		else if(url.match(_rwImgSrch)) {
 			csi = url.indexOf('&csi=');
-			channel.URI.spec = (url.substring(0, csi) + url.substring(url.indexOf('&', csi + 1))).replace(/cidx:\d,_id:irc_imgrc\d,_pms:s/, "cidx:2,_id:irc_imgrc2,_pms:s");
+			_redir(channel, (url.substring(0, csi) + url.substring(url.indexOf('&', csi + 1))).replace(/cidx:\d,_id:irc_imgrc\d,_pms:s/, "cidx:2,_id:irc_imgrc2,_pms:s"));
 		}
 		else if(url.match(_rwReddit))
-			channel.URI.spec = url.replace(/\.\S+\./, '.');
+			_redir(channel, url.replace(/\.\S{11}\./, '.'));
 		else if(url.match(_rwMozMedia))
-			channel.URI.spec = url.replace(/\.\S+\./, '.');
+			_redir(channel, url.replace(/\.\S{12}\./, '.'));
 
 		else for(k in _search) if(url.indexOf(k) > -1) {
 			s = _search[k];
@@ -509,7 +515,8 @@ window.toggleRW = window.toggleRW || function() {
 							if (!rwOverwriteDown) {
 								r[i] = _sanitizeUrl(channel.URI.spec);
 							}
-							channel.URI.spec = r[i];
+							_redir(channel, r[i]);
+							//console.debug(url, "->", channel.URI.spec);
 							return;
 						}
 						s[i][2] = (++s[i][2] || 0) % s[i][1];
@@ -517,7 +524,8 @@ window.toggleRW = window.toggleRW || function() {
 							if (!rwOverwriteDown) {
 								r[i][s[i][2]] = _sanitizeUrl(channel.URI.spec);
 							}
-							channel.URI.spec = r[i][s[i][2]];
+							_redir(channel, r[i][s[i][2]]);
+							//console.debug(url, "->", channel.URI.spec);
 						} else {
 							r[i].push(_sanitizeUrl(url));
 						}
@@ -532,11 +540,19 @@ window.toggleRW = window.toggleRW || function() {
 		}
 
 		//skip sanitization unless a custom request OR a CSS/JS/PNG that's not in the ignore list
-		if((!url.match(_rwCSSJSPNG) || url.match(_rwCSSJSIgnore)) && !url.match(_rwCustomReq)) return;
+		if((!url.match(_rwCSSJSPNG) || url.match(_rwCSSJSIgnore)) && !url.match(_rwCustomReq)) {
+			//console.debug(url, "final", channel.URI.spec)
+			return;
+		}
 
 		params = url.match(_rwParams);
-		if(!params) return;
-		channel.URI.spec = _sanitizeUrl(url, params);
+		if(!params) {
+			//console.debug(url, "no params; final", channel.URI.spec)
+			return;
+		}
+		_redir(channel, _sanitizeUrl(url, params));
+		//console.debug(url, "final", channel.URI.spec)
+
 	}, {
 		title: "URL Rewriter On",
 		body: "Chosen URLs will be remapped to cache."

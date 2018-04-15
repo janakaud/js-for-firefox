@@ -13,7 +13,10 @@ window.cHeader = window.cHeader || function(channel, key) {
 };
 window.toggleXhrOnline = window.toggleXhrOnline || function() {
 	toggleService.toggle('xhronline', function(channel) {
-		if(offline.getAttribute("checked") == "true" && channel.URI.spec.indexOf("trello") > 0 && (cHeader(channel, "X-Requested-With") || cHeader(channel, "X-Trello-Client-Version")))
+		url = channel.URI.spec;
+		if(offline.getAttribute("checked") == "true" && 
+			(url.indexOf("trello") > 0 && (cHeader(channel, "X-Requested-With") || cHeader(channel, "X-Trello-Client-Version"))) ||
+			url.indexOf("gwt/autocompleteService") > 0 || url.indexOf("gwt/ideService") > 0)
 			toggleOffline();
 	}, {
 		title: "Listening for XHR",
