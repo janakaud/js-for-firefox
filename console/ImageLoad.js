@@ -1,12 +1,17 @@
 //reload
 var l = document.getElementsByTagName('img');
 for(i = 0; i < l.length; i++) {
-	console.log(l[i].src);
+	console.log(i, l[i].src);
 }
-var end = l.length - parseInt(prompt('End chop'));
+var end = l.length - parseInt(prompt('End chop (0-based)'));
 for(i = parseInt(prompt('Start chop')); i < end; i++) {
 	l[i].src = l[i].src.replace(/^https?:\/\//, '//');
 }
+
+//BIC thumbnails
+$('.spec-scroll img').each(function(i, img) {
+	img.src = img.src.replace(/^https?:\/\//, '//');
+})
 
 //dynamic img URLs
 var l = document.getElementsByTagName('img');
