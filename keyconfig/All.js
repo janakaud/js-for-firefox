@@ -3,7 +3,21 @@
 // notification generator
 window.__notifyElem = Cc["@mozilla.org/alerts-service;1"].getService(Components.interfaces.nsIAlertsService).showAlertNotification;
 window.notify = function(enabled, title, body) {
-	__notifyElem("chrome://mozapps/skin/extensions/alerticon-info-" + (enabled ? "positive" : "negative") + ".svg", title, body, false, "", null, "");
+	__notifyElem("chrome://mozapps/skin/extensions/alerticon-info-" + (enabled ? "positive" : "negative") + ".svg",
+		title, body, false, "", null, "");
+};
+
+window._flat = function(expr) {
+	return expr.source;
+};
+window._or = function(...exprs) {
+	return new RegExp("(" + _join("|", exprs) + ")");
+};
+window._seq = function(...exprs) {
+	return new RegExp(_join("", exprs));
+};
+window._join = function(sep, exprs) {
+	return exprs.map(_flat).join(sep);
 };
 
 // provides toggle functions and status maintenance
@@ -87,14 +101,37 @@ window.toggleService = {
 		}
 	}
 };
-window._toggleIgnore = /^https?:\/\/(127\.0\.0\.1|192\.168\.|localhost|unpkg\.com\/@?(blueprintjs|normalize\.css)|raw\.githubusercontent\.com\/kristoferjoseph\/flexboxgrid\/master\/dist\/flexboxgrid\.min\.css|cdnjs\.cloudflare\.com\/ajax\/libs\/(monaco-editor|require\.js)|(cloudformation|lambda)\.\S+\.amazonaws\.com|s3(|\..+)\.amazonaws\.com\/com\.slappforge\.sigma\.test|apis\.google\.com\/_\/scs|docs\.google\.com\/document\/)/;
+
+window._toggleIgnore = _seq(/^https?:\/\//, _or(
+	/127\.0\.0\.1|192\.168\.|localhost/,
+	/unpkg\.com\/@?(blueprintjs|normalize\.css)/,
+	/raw\.githubusercontent\.com\/kristoferjoseph\/flexboxgrid\/master\/dist\/flexboxgrid\.min\.css/,
+	/cdnjs\.cloudflare\.com\/ajax\/libs\/(monaco-editor|require\.js)/,
+	/(cloudformation|lambda)\.\S+\.amazonaws\.com/,
+	/s3(|\..+)\.amazonaws\.com\/com\..+\.sigma\.test/,
+	/apis\.google\.com\/_\/scs/,
+	/content\.googleapis\.com\/(discovery\/v1\/apis|static\/proxy\.html)/,
+	/content\.googleapis\.com\/(deploymentmanager|storage)/,
+	/apis\.google\.com\/js\/(api\.js|googleapis\.proxy\.js)/,
+	/accounts\.google\.com\/o\/oauth2\/iframe(|rpc)/,
+	/ssl\.gstatic\.com\/accounts\/o/,
+	/cdnjs\.cloudflare\.com\/ajax\/libs\/jsrsasign/,
+	/medium\.com\/(_\/api\/posts\/\w+\/claps|me\/stories)/,
+	_seq(/mail\.google\.com\/mail\/u\/\d.+/, _or(
+		/view=(tl|fimg)/,
+		/view=att&/,
+		/view=cv.*&cfact=/,
+		/act=(rd|tr|rc|sm|lrd|secint|urt|dr|sd|xst)/
+	))
+));
 
 // disable reconnection attempts on Slack
 window._regexSlack = /slack\.com\/api\/api\.test/;
 window.toggleSlack = window.toggleSlack || function() {
 	toggleService.toggle('slack', function(channel) {
-		if(channel.URI.spec.match(_regexSlack))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(channel.URI.spec.match(_regexSlack)) {
+			_block(channel, "slack");
+		}
 	}, {
 		title: "Slack Blocked",
 		body: "Reconnection tries of Slack will be blocked."
@@ -131,8 +168,8 @@ window._uriSvc = Components.classes["@mozilla.org/network/io-service;1"].getServ
 
 window._rwHackerStack = /\bhackerrank\.com\b|\/posts\/\d+\/comments/;
 window._rwGAE = /\bappengine\.google\.com\/(css|js)/;
-window._rwGoogleDev = /\b(cloud|developers)\.google\.com\/_static\/\w{10,}\//;
-window._rwMDN = /developer\.cdn\.mozilla\.net\/static\//;
+window._rwGoogleDev = /\b(cloud|developers|firebase)\.google\.com\/_static\/\w{10,}\//;
+window._rwMDN = /developer\.mozilla\.org\/static\//;
 window._rwGoogleIssues = /issuetracker\.google\.com\/.+\.(css|js)?/;
 window._rwBlogger = /www\.blogger\.com\/dyn-css\//;
 window._rwSpring = /spring\.io\/.+\.(js|css)/;
@@ -140,449 +177,38 @@ window._rwImgSrch = /www\.google\.[a-z]*\/async\/imgrc\?/;
 window._rwReddit = /redditstatic\.com\//;
 window._rwMozMedia = /mozilla\.org\/media\//;
 window._rwAliExpress = /i\.alicdn\.com\/\S+\/.*\?\?/;
+window._rwStackCss = /cdn\.sstatic\.net\/Sites\/\w+\/mobile\.css/;
+window._rwYouTrackAuth = /jkweirujlskandfksdnf/; // /support\.\w+\.com\/(hub\/api\/rest\/oauth2\/auth|youtrack\/oauth)#/;
+window._rwSlant = /slant\.co\/\w{20,}/;
+window._rwGAS = /script\.google\.com\/.+\/(googleappsscripts\.nocache\.js|.+\.cache\.js)/;
 
 window._rwAble = /\b(js|css|png)\b/;
-window._rwIgnore = /(docs|drive|accounts)\.google\.com|www\.googleapis\.com|mail\.google\.com\/mail\/u\/\d\/(x|h)|google\.\w+\/search\?|\/xjs\/_\/js\/|recaptcha\/api2\/webworker\.js|ssl\.gstatic\.com\/accounts\/static\/_\/|forums\.mozillazine\.org\/viewtopic\.php/;
+window._rwIgnore = _or(
+	/support\.\w+\.com\/youtrack\/issue/,
+	/(docs|drive|accounts)\.google\.com/,
+	/www\.googleapis\.com/,
+	/mail\.google\.com\/(mail\/u\/\d|_\/scs\/mail-static\/_\/js\/)/,
+	/google\.\w+\/search\?/,
+	/recaptcha\/(api\.js|api2)/,
+	/ssl\.gstatic\.com\/accounts\/static\/_/,
+	/www\.gstatic\.com\/recaptcha/,
+	/encrypted-tbn0\.gstatic\.com/,
+	/forums\.mozillazine\.org\/viewtopic\.php/,
+	/support\.\w+\.com\/hub\/api\/rest\/oauth2\/auth/,
+	/pb-control\.appspot\.com/,
+	/linkedin\.com\/voyager\/api/,
+	/media\.licdn\.com\/dms\/image/,
+	/buyincoins\.com\/\?r=/,
+	/youtube\.com\//,
+	/(viewtopic|showthread)\.php/
+);
 window._rwCustomReq = /\/users\/codeheart\/requests\?/;
-window._rwParams = /\b(d|date|version|timestamp|buildTime|build-number|build|tseed|ver|cx|_v|_t|v|t|_|r|b|u|q|cb|rnd|tsp|spm)\b=[-a-z_0-9.:]+&?|\?_?[a-z_0-9]+$/ig;
-
-/*
-window._search = window._search || {};
-window._replace = window._replace || {};
-
-url5r = 'https://assetsv2.fiverrcdn.com/';
-window._search[url5r] = [
-/\/conversations-\w+\.css/,
-/\/conversations-\w+\.js/,
-/\/jquery\.uploadifive-\w+\.js/,
-/\/application-\w+\.js/,
-/\/application-\w+\.css/,
-/\/application-deferred-\w+\.css/,
-/\/application-dependencies-\w+\.js/,
-/\/application-legacy-\w+\.js/,
-/\/orders-\w+\.css/,
-/\/orders-\w+\.js/,
-/\/reconnecting\.websocket-\w+\.js/,
-/\/global-gig-listings-\w+\.js/,
-/\/global-gig-listings-\w+\.css/,
-/\/marketplace-\w+\.css/,
-/\/user-dashboard-\w+\.css/,
-/\/jquery\.inline-alert-\w+\.js/,
-/\/todos-\w+\.js/,
-/\/page-filter-actions-\w+\.css/,
-/\/react-quick_responses-\w+\.css/,
-/\/react-quick_responses-\w+\.js/,
-/\/react-attachment_preview-\w+\.css/,
-/\/polyfills-\w+\.js/,
-/\/instantImpressions-\w+\.js/,
-/\/jquery-2.1.4.min-\w+\.js/,
-/\/translations.en-\w+\.js/,
-/\/emoji-helper-\w+\.js/,
-/\/popup-report-message-\w+\.js/,
-/\/popup-report-message-\w+\.css/,
-/\/footer-\w+\.css/,
-/\/help-menu-\w+\.css/,
-/\/fHelpMenu-\w+\.js/,
-/\/appboy.min-\w+\.css/,
-/\/appboy.min-\w+\.js/,
-/\/notification-drawer-\w+\.css/,
-/\/notification-drawer-\w+\.js/,
-/\/appboy-overrides-\w+\.css/,
-/\/tab-manager-\w+\.js/,
-/\/fiverr-realtime-\w+\.css/,
-/\/fRealTime-\w+\.js/,
-/\/requests-\w+\.js/,
-/\/offers-shared-\w+\.css/,
-/\/offers-shared-\w+\.js/,
-/\/react-order_notes_show-\w+\.css/,
-/\/react-order_notes_show-\w+\.js/,
-/\/global-social-sharing-\w+\.js/,
-/\/popup-base-\w+\.js/,
-/\/global-gig-cards-\w+\.css/,
-/\/react-inbox-\w+\.css/,
-/\/react-inbox-\w+\.js/,
-/\/todos-\w+\.js/,
-/\/popup-order-social-share-\w+\.js/,
-/\/orders-share-deliveries-\w+\.js/,
-/\/manage_gigs-\w+\.js/,
-/\/passable-\w+\.js/,
-/\/react-seller_profile_form_thin-\w+\.css/,
-/\/react-seller_profile_form_thin-\w+\.js/,
-/\/users-\w+\.css/,
-/\/users-\w+\.js/,
-/\/seller-popup-\w+\.css/,
-/\/fNow-\w+\.js/,
-/\/CountryAutocomplete-\w+\.js/,
-/\/phone-verification-\w+\.js/,
-/\/templates-popups-\w+\.js/,
-/\/convDeprecationEvents-\w+\.js/
-];
-
-urlBb = 'https://d301sr5gafysq2.cloudfront.net/';
-window._search[urlBb] = [
-/\/css\/entry\/vendor\.css/,
-/\/css\/entry\/app\.css/,
-/\/css\/entry\/adg3\.css/,
-/\/dist\/webpack\/app\.js/,
-/\/dist\/webpack\/vendor\.js/,
-/\/dist\/webpack\/sentry\.js/,
-/\/dist\/webpack\/early\.js/,
-/\/dist\/webpack\/common\.js/,
-/\/dist\/webpack\/pullrequests\.js/,
-/\/dist\/webpack\/1\.chunk\.js/,
-/\/dist\/webpack\/word-diff-worker\.js/,
-/\/dist\/webpack\/locales\/en\.js/,
-/\/dist\/webpack\/dashboard\.js/,
-/\/dist\/webpack\/repo-admin\.js/,
-/\/jsi18n\/en\/djangojs\.js/
-];
-
-urlPPal = 'https://www.paypalobjects.com/';
-window._search[urlPPal] = [
-/\/web\/res\/\w+\/\w+\/css\/contextualLogin\.css/,
-/\/auth\/createchallenge\/\w+\/challenge.js/,
-/\/js\/lib\/tealeaf-ul-prod_domcap\.min\.js/,
-/\/css\/app\.ltr\.css/,
-/\/css\/paypal-sans\.css/,
-/\/css\/summary\.ltr\.css/,
-/\/js\/apps\/app\.js/,
-/\/js\/apps\/3\.3\.js/,
-/\/widgets\/ajaxError\.js/,
-/\/dust-templates\.js/,
-/\/languagepack\.js/,
-/\/widgets\/overpanel\.js/,
-/\/summary\/inc\/fiModule\/fiList\.js/,
-/\/activity\/transactionItemSimple\.js/,
-/\/txndetails\/modules\.js/,
-/\/txndetails\/inc\/layout\.js/,
-/\/css\/wallet\.ltr\.css/,
-/\/js\/apps\/1\.1\.js/,
-/\/eboxapps\/css\/\w+\//,
-/\/eboxapps\/css\/\w+\//,
-/\/eboxapps\/css\/\w+\//,
-/\/eboxapps\/js\/\w+\//,
-/\/css\/app-service-nav\.ltr\.css/,
-/\/js\/index\.js/,
-];
-
-urlPPAuth = 'https://www.paypal.com/auth/createchallenge/';
-window._search[urlPPAuth] = [/challenge\.js/];
-
-urlTrello = 'https://a.trellocdn.com/';
-window._search[urlTrello] = [
-/\/snowplow\.js/,
-/\/quickload\.js/,
-/\/ltp\.js/,
-/\/locale\.en-US\.js/,
-/\/app\.js/,
-/\/core\.css/,
-/\/images\.css/,
-// https://trello.com/1/boards/58c182fa6a2274fdeeff4ff3/plugins
-// https://rules.quantcount.com/rules-p-9tnwrxnK1azF1.js
-// https://bello.atlassian.io/index.6bd8e18b3a5707deeb51.js
-// https://cdn.segment.com/analytics.js/v1/8Sa7pJhJNl2oAwmmg0bs5LotU31HtsmE/analytics.min.js
-];
-
-urlSlack = 'https://a.slack-edge.com/';
-window._search[urlSlack] = [
-/\/style\/rollup-plastic\.css/,
-/\/style\/libs\/lato-2-compressed\.css/,
-/\/style\/_helpers\.css/,
-/\/style\/signin\.css/,
-/\/style\/index\.css/,
-/\/style\/sticky_nav\.css/,
-/\/style\/footer\.css/,
-/\/style\/rollup-client_core\.css/,
-/\/style\/rollup-client_primary\.css/,
-/\/style\/typography\.css/,
-/\/style\/rollup-client_general\.css/,
-/\/style\/rollup-client_secondary\.css/,
-/\/style\/rollup-client_base\.css/,
-/\/style\/date_picker\.css/,
-/\/style\/libs\/quill\.core\.css/,
-/\/style\/texty\.css/,
-/\/style\/rollup-slack_kit_legacy_adapters\.css/,
-/\/style\/account_settings\.css/,
-/\/bv1-1\/webpack\.manifest\.\w+\.min\.js/,
-/\/bv1-1\/emoji\.\w+\.min\.js/,
-/\/bv1-1\/rollup-core_required_libs\.\w+\.min\.js/,
-/\/bv1-1\/rollup-core_required_ts\.\w+\.min\.js/,
-/\/bv1-1\/handlebars_4010\.\w+\.min\.js/,
-/\/bv1-1\/TS\.web\.\w+\.min\.js/,
-/\/bv1-1\/rollup-core_web\.\w+\.min\.js/,
-/\/bv1-1\/rollup-secondary_a_required\.\w+\.min\.js/,
-/\/bv1-1\/rollup-secondary_b_required\.\w+\.min\.js/,
-/\/bv1-1\/application\.\w+\.min\.js/,
-/\/bv1-1\/slack_beacon\.\w+\.min\.js/,
-/\/bv1-1\/webpack\.manifest\.\w+\.min\.js/,
-/\/bv1-1\/bootstrap-client\.\w+\.min\.js/,
-/\/bv1-1\/emoji\.\w+\.min\.js/,
-/\/bv1-1\/rollup-core_required_libs\.\w+\.min\.js/,
-/\/bv1-1\/rollup-core_required_ts\.\w+\.min\.js/,
-/\/bv1-1\/handlebars_4010\.\w+\.min\.js/,
-/\/bv1-1\/rollup-client\.\w+\.min\.js/,
-/\/bv1-1\/TS\.highlights_briefing\.\w+\.min\.js/,
-/\/bv1-1\/TS\.utility\.window\.\w+\.min\.js/,
-/\/bv1-1\/TS\.files\.gdrive\.\w+\.min\.js/,
-/\/bv1-1\/TS\.files\.onedrive\.\w+\.min\.js/,
-/\/bv1-1\/TS\.ui\.current_status_input\.\w+\.min\.js/,
-/\/bv1-1\/rollup-secondary_a_required\.\w+\.min\.js/,
-/\/bv1-1\/rollup-secondary_b_required\.\w+\.min\.js/,
-/\/bv1-1\/application\.\w+\.min\.js/,
-/\/bv1-1\/focus-ring\.\w+\.min\.js/,
-/\/bv1-1\/lz-string-[\d.]+\.worker\.\w{20,}\.js/,
-/\/bv1-1\/TS\.client\.ui\.channel_insights\.\w+\.min\.js/,
-/\/bv1-1\/TS\.web\.account_settings\.\w+\.min\.js/,
-/\/bv1-1\/username_format\.\w+\.min\.js/,
-/\/bv1-1\/zxcvbn\.\w+\.min\.js/,
-/\/bv1-1\/format-message-parse-tokens\.\w+\.min\.js/,
-/\/bv1-1\/message-format\.\w+\.min\.js/,
-/\/bv1-1\/TS\.min\.\w+\.min\.js/,
-/\/bv1-1\/TS\.i18n\.\w+\.min\.js/,
-/\/bv1-1\/TS\.clog\.\w+\.min\.js/,
-/\/bv1-1\/signals\.\w+\.min\.js/,
-/\/bv1-1\/sticky_nav\.\w+\.min\.js/,
-/\/bv1-1\/spin\.\w+\.min\.js/,
-/\/bv1-1\/ladda\.\w+\.min\.js/,
-/\/bv1-1\/footer\.\w+\.min\.js/,
-/\/bv1-1\/jquery\.\w+\.min\.js/,
-/\/bv1-1\/Intl\.\w+\.min\.js/,
-/\/bv1-1\/warn_capslock\.\w+\.min\.js/,
-/\/bv1-1\/modern\.vendor\.\w+\.min\.js/,
-/\/bv1-1\/codemirror\.min\.\w+\.min\.js/,
-/\/bv1-1\/simple\.\w+\.min\.js/,
-/\/bv1-1\/codemirror_load\.\w+\.min\.js/,
-];
-
-urlSlackTmpl = ".slack.com/templates.php?cb=";
-_search[urlSlackTmpl] = [/templates\.php\?cb=/];
-
-urleBayDev = '://ir.ebaystatic.com/rs/c/';
-window._search[urleBayDev] = [
-[/hello-\w+\.css/, 2],
-[/reset-\w+\.css/, 2],
-[/fyp-\w+\.css/, 2],
-[/auth-\w+\.css/, 2],
-[/keys-\w+\.css/, 2],
-[/profile-\w+\.css/, 2],
-/hello-\w+\.js/,
-/reset-\w+\.js/,
-/fyp-\w+\.js/,
-/auth-\w+\.js/,
-/keys-\w+\.js/,
-/profile-\w+\.js/,
-];
-
-urleBay = 'https://secureir.ebaystatic.com/rs/v/';
-window._search[urleBay] = [
-[/\w+\.css/, 5],
-[/\w+\.js/, 7],
-];
-
-urlEBForum = '://forums.developer.ebay.com/';
-window._search[urlEBForum] = [/\/css\/bootstrap\.min\.css/];
-
-urlGH = 'https://assets-cdn.github.com/assets/';
-window._search[urlGH] = [
-/mobile-\w+\.css/,
-/mobile-\w+\.js/,
-/frameworks-\w+\.css/,
-/frameworks-\w+\.js/,
-/github-\w+\.css/,
-/github-\w+\.js/,
-/compat-\w+\.js/,
-];
-
-urlDZ1 = '://dz2cdn3.dzone.com/';
-window._search[urlDZ1] = [[/-combined\.css/, 2]];
-urlDZ2 = '://dz2cdn2.dzone.com/';
-window._search[urlDZ2] = [[/-combined\.js/, 2]];
-
-urlGAS = 'https://script.google.com/';
-window._search[urlGAS] = [
-/\/client\/css\/\d+-MaestroIdeShellCss_ltr.css/,
-/\/client\/js\/\d+-code_mirror_bin_code_mirror.js/,
-/\/client\/js\/\d+-maestro_ide_shell_bin_i18n_maestro_ide_shell\.js/,
-/\/gwt\/googleappsscripts\.nocache\.js/,
-/\/sharing\/init/,
-/\/gwt\/\w+\.cache\.js/,
-/\/static\/\d+-Browser/,
-/\/static\/\d+-CacheService/,
-/\/static\/\d+-CalendarApp/,
-/\/static\/\d+-Charts/,
-/\/static\/\d+-GmailApp/,
-/\/static\/\d+-ContactsApp/,
-/\/static\/\d+-ContentService/,
-/\/static\/\d+-DocumentApp/,
-/\/static\/\d+-DriveApp/,
-/\/static\/\d+-FormApp/,
-/\/static\/\d+-PropertiesService/,
-/\/static\/\d+-GroupsApp/,
-/\/static\/\d+-ScriptApp/,
-/\/static\/\d+-ScriptProperties/,
-/\/static\/\d+-Session/,
-/\/static\/\d+-SpreadsheetApp/,
-/\/static\/\d+-UiApp/,
-/\/static\/\d+-UrlFetchApp/,
-/\/static\/\d+-UserProperties/,
-/\/static\/\d+-Utilities/,
-/\/static\/\d+-XmlService/,
-/\/static\/\d+-Blob/,
-/\/static\/\d+-HtmlService/,
-/\/static\/\d+-Jdbc/,
-/\/static\/\d+-LanguageApp/,
-/\/static\/\d+-LinearOptimizationService/,
-/\/static\/\d+-Ui/,
-/\/static\/\d+-LockService/,
-/\/static\/\d+-Logger/,
-/\/static\/\d+-MailApp/,
-/\/static\/\d+-Maps/,
-/\/static\/\d+-MimeType/,
-/\/static\/\d+-SlidesApp/,
-/\/static\/\d+-console/,
-/\/static\/\d+-BigNumber/,
-/\/static\/\d+-JSON/,
-/\/static\/\d+-Math/,
-/\/static\/\d+-Object/,
-/\/static\/\d+-BlobSource/,
-/\/static\/\d+-Button/,
-/\/static\/\d+-ButtonSet/,
-/\/static\/\d+-ColumnType/,
-/\/static\/\d+-DataTable/,
-/\/static\/\d+-DataTableBuilder/,
-/\/static\/\d+-DataTableSource/,
-/\/static\/\d+-DigestAlgorithm/,
-/\/static\/\d+-Menu/,
-/\/static\/\d+-Month/,
-/\/static\/\d+-PromptResponse/,
-/\/static\/\d+-User/,
-/\/static\/\d+-Weekday/,
-/\/static\/\d+-Array/,
-/\/static\/\d+-SitesApp/,
-/\/static\/\d+-CardService/,
-];
-
-urlGooJS = 'https://www.google.com/js/';
-window._search[urlGooJS] = [
-[/\/bg\/\w+\.js/, 2],
-];
-
-urlGAPI = 'https://apis.google.com/_/scs/abc-static/';
-window._search[urlGAPI] = [
-[/_\/js\/k=gapi\.gapi\.en\..*\/m=gapi_iframes,googleapis_client,plusone\/rt=j\/sv=1\/d=1\/ed=1\/rs=.*\/cb=gapi\.loaded_0/, 2],
-/_\/js\/k=gapi\.gapi\.en\..*\/m=gapi_iframes,googleapis_client,iframes_styles_slide_menu,plusone\/rt=j\/sv=1\/d=1\/ed=1\/rs=.*\/cb=gapi\.loaded_0/,
-];
-
-urlMozBug = 'https://bugzilla.mozilla.org/data/assets/';
-window._search[urlMozBug] = [
-[/\w+\.css/, 2],
-[/\w+\.js/, 4],
-];
-
-urlOstk = 'https://ak1.ostkcdn.com/';
-window._search[urlOstk] = [
-/js\/product-page\.[.\d]+\.min\.js/,
-/css\/os-master\.[.\d]+\.min\.css/,
-/js\/overstock\.[.\d]+\.min\.js/,
-/js\/os-async\.[.\d]+\.min\.js/,
-/js\/ostk-user-tracking-all\.[.\d]+\.min\.js/,
-/js\/thirdparty\/siteIntercept\.[.\d]+\.min\.js/,
-/js\/thirdparty\/ensighten\/ensighten-bootstrap\.js/,
-/js\/thirdparty\/swf\/jwplayer\.[.\d]+\.min\.js/,
-/js\/s_code_async\.js/,
-/css\/product-page\.[.\d]+\.min\.css/,
-/js\/os-templates\.[.\d]+\.min\.js/,
-];
-
-urlMedium = 'https://cdn-static-1.medium.com/_/fp/';
-window._search[urlMedium] = [
-/gen-js\/main-base\.bundle\..+\.js/,
-/gen-js\/main-common-async\.bundle\..+\.js/,
-/gen-js\/main-misc-screens\.bundle\..+\.js/,
-/gen-js\/main-notes.bundle\..+\.js/,
-/gen-js\/main-home-screens\.bundle\..+\.js/,
-/gen-js\/main-posters\.bundle\..+\.js/,
-/css\/main-branding-base\..+\.css/,
-/css\/fonts-latin-base\..+\.css/,
-/css\/fonts-base\..+\.css/,
-];
-
-urlStatCtr = 'https://statcounter.com/';
-window._search[urlStatCtr] = [
-/\/css\/packed\/app-\w+\.css/,
-/\/css\/packed\/print-\w+\.css/,
-/\/js\/packed\/user-\w+\.js/,
-/\/js\/packed\/base-\w+\.js/,
-/\/css\/packed\/layout-\w+\.css/,
-];
-
-urlDkrHubId = "https://id.docker.com/static/";
-window._search[urlDkrHubId] = [
-/vendor\.\w+\.css/,
-/login\.\w+\.css/,
-/vendor\.\w+\.js/,
-/login\.\w+\.js/,
-];
-
-urlDkrHub = "https://hub.docker.com/";
-window._search[urlDkrHub] = [
-/vendor\.\w+\.css/,
-/login\.\w+\.css/,
-/vendor\.\w+\.js/,
-/login\.\w+\.js/,
-/client\.\w+\.js/,
-/main-0-\w+\.css/,
-];
-
-urlK8sIo = "https://d33wubrfki0l68.cloudfront.net/";
-window._search[urlK8sIo] = [
-/\w+\/css\/styles\.css/,
-];
-
-urlEc2 = "/ec2/";
-window._search[urlEc2] = [
-/ec2\.nocache\.js/,
-/[^\/]{5,}\.cache\.js/,
-/\/1\.cache\.js/,
-/\/2\.cache\.js/,
-/\/3\.cache\.js/,
-/\/4\.cache\.js/,
-/\/5\.cache\.js/,
-/\/6\.cache\.js/,
-/\/7\.cache\.js/,
-/\/8\.cache\.js/,
-/\/9\.cache\.js/,
-/\/10\.cache\.js/,
-/\/11\.cache\.js/,
-/\/12\.cache\.js/,
-/\/13\.cache\.js/,
-/\/14\.cache\.js/,
-];
-
-urlEc22 = ".gz.";
-window._search[urlEc22] = [
-/menu-\w+\/globalnav-\w+\.gz\.css/,
-/mezz-\w+\/custsat-\w+\.gz\.css/,
-/mezz-\w+\/custsat-\w+\.gz\.js/,
-[/mezz-\w+\/mezz-\w+.gz.js/, 2],
-/menu-\w+\/globalnav-\w+\.gz\.js/,
-/iam\/assets\/css\/bundles\/1_1505433600_270085c48f576fdeb829590f4fc80996\.css\.gz\.css/,
-/iam\/assets\/js\/bundles\/en_4_1505433600_185326f6f405fe93a05e1f0cfd76ac88\.min\.js\.gz\.js/,
-];
-
-urlEc23 = ".cloudfront.net/";
-window._search[urlEc23] = [
-/versions\/live-ec2\/[\w-_]+\/Content\/text\/content_en\.js/,
-/\/amznUrchin\.js/,
-/iam\/assets\/js\/bundles\/policies.js/,
-];
-
-urlGeeks = "codegeeks.com/wp-content/cache/autoptimize/";
-window._search[urlGeeks] = [
-[/css\/autoptimize_\w+\.css/, 3],
-/js\/autoptimize_\w+\.js/
-];
-*/
+window._rwParams = new RegExp(
+	_seq(/\b/, _or(
+		/d|date|version|timestamp|queryAfterTime|buildTime|buildVersion|build-number|timestamp|build|tseed|ver/,
+		/cx|_v|_t|v|t|e|_|r|b|u|cb|rnd|tsp|spm/
+	), /\b=[-a-z_0-9.:]+&?|\?_?[a-z_0-9]+$/
+).source, "ig");
 
 window._sanitizeUrl = function(url, params) {
     if (!params) {
@@ -597,16 +223,23 @@ window._sanitizeUrl = function(url, params) {
 
 window._redir = function(channel, url) {
 	origUrl = channel.URI;
-	if (origUrl.spec === url)	// already redirected
+	if (origUrl.spec === url) {	// already redirected
 		return;
+	}
 //	channel.URI = origUrl.mutate().setSpec(url).finalize();
+	console.debug(origUrl.spec, "->", url);
 	channel.redirectTo(origUrl.mutate().setSpec(url).finalize());
+};
+
+window._block = function(channel, cause) {
+	channel.cancel(Components.results.NS_BINDING_ABORTED);
+	console.debug(channel.URI.spec, "blocked by", cause);
 };
 
 window._rwFunction = function(channel) {
 	var url = channel.URI.spec;
 	//console.debug(url, "start");
-	if (url.match(_toggleIgnore)) {
+	if (url.match(_toggleIgnore) || url.match(_rwIgnore)) {
 		//console.debug(url, "ignored");
 		return;
 	}
@@ -619,7 +252,7 @@ window._rwFunction = function(channel) {
 		_redir(channel, url.substring(0, pos) + url.substring(url.indexOf("/", pos + 1)));
 	}
 	else if(url.match(_rwMDN))
-		_redir(channel, url.replace(/[0-9a-z]+\.js/, 'js').replace(/[0-9a-z]+\.css/, 'css'));
+		_redir(channel, url.replace(/[0-9a-z]{12}\.js/, 'js').replace(/[0-9a-z]{12}\.css/, 'css'));
 	else if(url.match(_rwGoogleIssues))
 		_redir(channel, url.substring(0, url.lastIndexOf('?')));
 	else if(url.match(_rwBlogger))
@@ -628,7 +261,8 @@ window._rwFunction = function(channel) {
 		_redir(channel, url.replace(/-[a-z0-9]{32}\./, '.'));
 	else if(url.match(_rwImgSrch)) {
 		var csi = url.indexOf('&csi=');
-		_redir(channel, (url.substring(0, csi) + url.substring(url.indexOf('&', csi + 1))).replace(/cidx:\d,_id:irc_imgrc\d,_pms:s/, "cidx:2,_id:irc_imgrc2,_pms:s"));
+		_redir(channel, (url.substring(0, csi) + url.substring(url.indexOf('&', csi + 1))).replace(/cidx:\d,_id:irc_imgrc\d,_pms:s/,
+			"cidx:2,_id:irc_imgrc2,_pms:s"));
 	}
 	else if(url.match(_rwReddit))
 		_redir(channel, url.replace(/\.\S{11}\./, '.'));
@@ -636,50 +270,14 @@ window._rwFunction = function(channel) {
 		_redir(channel, url.replace(/\.\S{12}\./, '.'));
 	else if(url.match(_rwAliExpress))
 		_redir(channel, url.replace(/\.\S{8}\./, '.'));
-/*
-	else for(k in _search) if(url.indexOf(k) > -1) {
-		var s = _search[k];
-		var r = _replace[k] || (_replace[k] = []);
-		for(i in s) {
-			var multi = s[i] instanceof Array;
-			var key = multi ? s[i] [0] : s[i];
-			if(url.match(key)) {
-				if(r[i]) {
-					if (!multi) {
-						if (!rwOverwriteDown) {
-							r[i] = _sanitizeUrl(channel.URI.spec);
-						}
-						_redir(channel, r[i]);
-						//console.debug(url, "->", channel.URI.spec);
-						return;
-					}
-					s[i] [2] = (++s[i] [2] || 0) % s[i] [1];
-					if (r[i] [s[i] [2]]) {
-						if (!rwOverwriteDown) {
-							r[i] [s[i] [2]] = _sanitizeUrl(channel.URI.spec);
-						}
-						_redir(channel, r[i] [s[i] [2]]);
-						//console.debug(url, "->", channel.URI.spec);
-					} else {
-						r[i].push(_sanitizeUrl(url));
-					}
-				} else {
-					url = _sanitizeUrl(url);
-					r[i] = multi ? [url] : url;
-				}
-				return;
-			}
-		}
-		return;
-	}
-
-	//skip sanitization unless a custom request OR a CSS/JS/PNG that's not in the ignore list
-	if ((!url.match(_rwAble) || url.match(_rwIgnore)) && !url.match(_rwCustomReq)) {
-*/
-	if (url.match(_rwIgnore)) {
-		//console.debug(url, "final", channel.URI.spec)
-		return;
-	}
+	else if(url.match(_rwYouTrackAuth))
+		_redir(channel, "http://127.0.0.1/youtrack/index.html" + url.substring(url.indexOf("#")));
+	else if(url.match(_rwStackCss))
+		_redir(channel, "https://cdn.sstatic.net/Sites/stackoverflow/mobile.css");
+	else if(url.match(_rwSlant))
+		_redir(channel, url.replace(/\w{20,}\//, ''));
+	else if(url.match(_rwGAS))
+		_redir(channel, url.replace(/\/a\/[^\/]+/, '').replace(/\/d\/[^\/]+/, ''));
 
 	params = url.match(_rwParams);
 	if (!params) {
@@ -707,11 +305,24 @@ toggleRW();
 
 // CHANNELS
 
-window._regexChannels = /slack\.com\/(templates\.php\?cb=|api\/api\.test)|(client-channel|clients\d|hangouts)\.google\.com|mail\.google\.com\/mail\/u\/0\/\?|trello\.com\/1\/(Session|batch)|\/youtrack\/(_events\?|rest\/(statistics|profile\/hasUnseenFeatures))/;
+window._regexChannels = _or(
+	/mpmulti-.+\.slack-msgs\.com/,
+	/slack\.com\/(templates\.php\?|api\/api\.test)/,
+	/(client-channel|clients\d|hangouts)\.google\.com/,
+	/mail\.google\.com\/mail\/u\/\d\/\?/,
+	/trello\.com\/1\/(Session|batch)/,
+	/\/youtrack\/(_events\?|rest\/(statistics|profile\/hasUnseenFeatures))/,
+	/logImpressions/,
+	/docs\.google\.com\/.+\/(bind|test|active|hibernatestat)/,
+	/www\.fiverr\.com\/inbox\/contacts\/\w+$/,
+	/tripleclicks\.com\/PBAPI\d*\.php/
+);
+
 window.toggleChannels = window.toggleChannels || function() {
 	toggleService.toggle('channels', function(channel) {
-		if(channel.URI.spec.match(_regexChannels))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(channel.URI.spec.match(_regexChannels)) {
+			_block(channel, "channels");
+		}
 	}, {
 		title: "Channels Blocked",
 		body: "Slack, Hangouts, Gmail, Trello etc blocked."
@@ -726,32 +337,71 @@ toggleChannels();
 
 // UA
 
-window._sitesDefault = /\/\/(.+\.webex\.com|0\.facebook\.com|.+\.slack\.com|.+\.appspot\.com|console\.aws\.amazon\.com|(developers|docs|drive|apis|cloud|script|domains)\.google\.com|drive\.google\.com|dzone\.com|fiverr\.com|kuoni\.zoom\.us|localhost|mail\.google\.com|medium\.com|messenger\.com|microsoftonline\.com|payoneer\.com|script\.google\.com|wap\.ebay\.com|web\.facebook\.com|www\.anyvan\.com|www\.evernote\.com|www\.facebook\.com|www\.fiverr\.com|www\.google\.(ca|com)|www\.gstatic\.com|developer\.android\.com|.+\.appspot\.com|www\.fiverr\.com)/;
-window._sitesSafari = /\/\/((www\.|)google\.lk|(www\.|signin\.|)quora\.com)/;
-window._sitesAndroid = /\/\/(blogspot\.com|cwiki\.apache\.org)/;
-window._sitesFirefox = /\/\/((mobile\.|)twitter\.com)/;
-window._sitesAndroidMobile = /\/\/(github\.com|productforums\.google\.com)/;
-window._uaDefault = navigator.userAgent;
+window._sitesDefault = _or(
+	/localhost:3000/,
+	/sigma\..+\.com/,
+	/cloudfront\.net/,
+	/console\.aws\.amazon\.com/,
+	/(docs|script)\.google\.com\/.+\/edit/,
+	/support\..+\.com/,
+	/mail\.google\.com\/mail\/u\/\d\/$/,
+	/google\.com\/recaptcha\//,
+	/\.amazonaws\.com|\/recaptcha\//
+);
+window._sitesVersioned = _or(
+	/(docs|domains)\.google\.com/,
+	/www\.fiverr\.com/,
+	/support\..+\.com\/youtrack\/oauth/
+);
+window._sitesMozFox = /(developers|apis|code)\.google\.com/;
+window._sitesGecko = _or(
+	/(cloud|drive|firebase)\.google\.com/,
+	/developer\.android\.com/,
+	/appspot\.com/
+);
+window._sitesSafari = _seq(/\/\//, _or(
+	/(www\.|)google\.(lk|ca)/,
+	/(www|m)\.youtube\.com/,
+	/www\.quora\.com/
+));
+window._sitesAndroid = _seq(/\/\//, _or(
+	/blogspot\.com/,
+	/cwiki\.apache\.org/
+));
+window._sitesAndroidMobile = _seq(/\/\//, _or(
+	/(gist\.|)github\.com/,
+	/productforums\.google\.com/
+));
+
+window._uaOptimal = "Firefox";
+window._uaVersioned = "Firefox/61";
+window._uaMozFox = "Mozilla/5 Firefox";
+window._uaGecko = "M Gecko";
+window._uaSafari = "Mobile Safari";
 
 window.toggleUA = window.toggleUA || function() {
 	toggleService.toggle('ua', function(channel) {
 		var url = channel.URI.spec;
-		var ua = _uaDefault;
+		var ua = _uaOptimal;
 		if (url.match(_sitesDefault)) {
 			ua = navigator.userAgent;
+		} else if (url.match(_sitesVersioned)) {
+			ua = _uaVersioned;
+		} else if (url.match(_sitesMozFox)) {
+			ua = _uaMozFox;
+		} else if (url.match(_sitesGecko)) {
+			ua = _uaGecko;
 		} else if (url.match(_sitesSafari)) {
-			ua = "Mobile Safari";
+			ua = _uaSafari;
 		} else if (url.match(_sitesAndroid)) {
 			ua = "Android";
-		} else if (url.match(_sitesFirefox)) {
-			ua = "Firefox";
 		} else if (url.match(_sitesAndroidMobile)) {
 			ua = "Android Mobile";
 		}
 		channel.setRequestHeader("User-Agent", ua, false);
 	}, {
 		title: "UA Blocked",
-		body: _uaDefault
+		body: _uaOptimal
 	}, {
 		title: "UA Unblocked",
 		body: navigator.userAgent
@@ -763,12 +413,19 @@ toggleUA();
 
 // SOCIAL
 
-window._regexSocial = /\b(facebook\.com\/sem_pixel\/|connect\.facebook\.net|facebook\.com\/connect\/ping|facebook\.com\/(v[0-9.]+\/)?plugins\/like(box)?\.php|platform\.twitter\.com\/(widgets\.)?js)\b/;
+window._regexSocial = _or(
+	/facebook\.com\/sem_pixel/,
+	/connect\.facebook\.net/,
+	/facebook\.com\/connect\/ping/,
+	/facebook\.com\/(v[0-9.]+\/)?plugins\/(page|like(box)?)\.php/,
+	/platform\.twitter\.com\/(widgets\.)?js/
+);
 
 window.toggleSocial = window.toggleSocial || function() {
 	toggleService.toggle('social', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexSocial))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexSocial)) {
+			_block(channel, "social");
+		}
 	}, {
 		title: "Social Blocked",
 		body: "FB, Twitter etc plugins will be blocked."
@@ -786,9 +443,10 @@ toggleSocial();
 window.toggleSameOrigin = window.toggleSameOrigin || function() {
 	toggleService.toggle('sameorigin', function(channel) {
 		url = channel.URI.spec;
-		origin = gBrowser.currentURI.spec.substring(0, gBrowser.currentURI.spec.indexOf("/", gBrowser.currentURI.spec.indexOf("//") + 2));
-		if (gBrowser.currentURI.spec != "about:newtab" && !url.startsWith(origin) && !url.startsWith("https://encrypted-tbn0.gstatic.com")) {
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		gbUrl = gBrowser.currentURI.spec;
+		origin = gbUrl.substring(0, gbUrl.indexOf("/", gbUrl.indexOf("//") + 2));
+		if (gbUrl != "about:newtab" && !url.startsWith(origin) && !url.startsWith("https://encrypted-tbn0.gstatic.com")) {
+			_block(channel, "sameorigin");
 		}
 	}, {
 		title: "Same Origin On",
@@ -804,12 +462,111 @@ window.toggleSameOrigin = window.toggleSameOrigin || function() {
 
 // MEDIA
 
-window._regexMedia = /\b(woff|woff2|ttf|otf|\.eot|mp3|mp4|m4a|\.ico|ogv|webm|gif|(fonts|maps|content)\.googleapis\.com|(ssl\.)?google-analytics\.com|survey\.g\.doubleclick\.net|seal\.geotrust\.com|tawk\.to|alexa\.com|cdn\.optimizely\.com|doubleclick\.net|www\.youtube\.com\/embed\/|s\.ytime\.com|google\.com\/adsense|forter.com|wiki(pedia\.org\/w|\b)\/load\.php|pagead2\.googlesyndication\.com|apis-explorer\.appspot\.com|developers\.google\.com\/profile\/userhistory|www\.googletagmanager\.com|radar\.cedexis\.com|intercom\.io|intercomcdn\.com|api\.qualaroo\.com|support\.google\.com\/[^/]+\/apis|s3\.amazonaws\.com\/ki\.js\/|www\.fiverr\.com\/(js_event_tracking|report_payload_(events|counter))|dev\.appboy\.com|(rt2|jen|collector)\.fiverr\.com|player\.vimeo\.com\/video\/233549644|script\.google\.com\/.+\/((bind|test|active)\?|exceptionService)|\/image-s\d-\dx\.jpg|ogs\.google\.com|bitbucket\.org\/(emoji\/|\!api\/.*\/pullrequests\/\d+\/(participants|merge-restrictions|updates))|google\.com\/.*\/jserror\?|dropbox\.com\/(jse|unity_connection_log|get_info_for_quota_upsell|alternate_wtl_browser_performance_info|log_js_sw_data|log\/|alternate_wtl|2\/notify\/subscribe)|slack\.com\/(beacon\/error|api\/(dnd\.teamInfo))|linkedin\.com\/(csp\/dtag|realtime\/connect|li\/track|voyager\/(abp-detection\.js|api\/(identity\/cards|legoWidgetImpressionEvents|feed\/(hovercard|richRecommendedEntities)|growth\/(suggestedRoutes|emailsPrefill|socialproofs)|relationships\/(peopleYouMayKnow|connectionsSummary)|voyagerGrowthEmailDomainResolutions)))|play\.google\.com\/log\?|(hackernoon|medium)\.com\/_\/batch|medium\.com\/.*(\/state\/location|me\/activity)|bam\.nr-data\.net\/jserrors|\/uconsole\/services\/metrics\/retrieveMultiGauges\/|www\.google\.com\/coop\/cse\/brand|\.google\.com\/(_s\/getsuggestions|profile\/userhistory)|api\.github\.com\/(users\/\w+\/repos|user\/repos\?)|www\.googleapis\.com\/urlshortener\/v1\/url|support\.\w+\.com\/(youtrack\/|hub\/api\/rest\/hubfeatures|youtrack\/(rest\/profile\/hasUnseenFeatures|rest\/user\/banner\/content|rest\/statistics))|sentry\.io\/api|cdn\.ravenjs\.com|www\.statcounter\.com\/counter\/counter\.js|_Incapsula_Resource|tripleclicks\.com\/(shared\/ajax\/notifications|games\/.*\/Badges))\b/;
+window._regexMedia = _or(
+	/\b(woff|woff2|ttf|otf|\.eot|mp3|mp4|m4a|ico|ogv|ogg|webm|gif|svg|wav)\b/,
+	/(fonts|maps|content)\.googleapis\.com/,
+	/henhouse/,
+	/ssl\.gstatic\.com\/gb\/images/,
+	/explorer\.apis\.google\.com/,
+	/(ssl\.)?google-analytics\.com/,
+	/survey\.g\.doubleclick\.net|seal\.geotrust\.com|alexa\.com|cdn\.optimizely\.com|doubleclick\.net/,
+	/www\.youtube\.com\/embed|s\.ytime\.com/,
+	/google\.com\/adsense/,
+	/forter.com/,
+	/wiki(pedia\.org\/w|\b)\/load\.php/,
+	/pagead2\.googlesyndication\.com/,
+	/apis-explorer\.appspot\.com/,
+	/developers\.google\.com\/profile\/userhistory/,
+	/www\.googletagmanager\.com/,
+	/radar\.cedexis\.com|intercom\.io|intercomcdn\.com|api\.qualaroo\.com/,
+	/support\.google\.com\/[^/]+\/apis/,
+	/s3\.amazonaws\.com\/ki\.js/,
+	_seq(/www\.fiverr\.com\//, _or(
+		/quick_responses|js_event_tracking|report_payload_(events|counter)/,
+		/inbox\/(custom_offer|counters|contacts(\?|\/\w+\/info))/
+	)),
+	/dev\.appboy\.com|(rt2|jen|collector)\.fiverr\.com/,
+	/player\.vimeo\.com\/video\/233549644/,
+	/script\.google\.com\/(sharing\/init|.+\/((bind|test|active)|exceptionService|gwt\/autocompleteService))/,
+	/\/image-s\d-\dx\.jpg/,
+	/ogs\.google\.com/,
+	/bitbucket\.org\/(emoji|\!api\/.*\/pullrequests\/\d+\/(participants|merge-restrictions|updates))/,
+	/google\.com\/.*\/jserror/,
+	_seq(/dropbox\.com\//, _or(
+		/jse|unity_connection_log|get_info_for_quota_upsell/,
+		/alternate_wtl_browser_performance_info|log_js_sw_data|log|alternate_wtl|2\/notify\/subscribe/
+	)),
+	_seq(/slack\.com\//, _or(
+		/messages\/.+/,
+		_seq(/api\//, _or(
+			/dnd\.teamInfo|experiments\.getByUser|promo\.banner|apps\.list|commands\.list|i18n\.translations\.get/,
+			/emoji\.list|apps\.profile\.get|help\.issues\.list|users\.counts|users\.info|channels\.suggestions/
+		))
+	)),
+	_seq(/linkedin\.com\//, _or(
+		/csp\/dtag|realtime\/connect|li\/track/,
+		_seq(/voyager\//, _or(/abp-detection\.js/,
+			_seq(/api\//, _or(
+				/messaging\/(badge|presenceStatuses|conversations(\?action|\/\d+\/events$))/,
+				/identity\/cards|legoWidgetImpressionEvents|feed\/(hovercard|richRecommendedEntities)/,
+				/growth\/(suggestedRoutes|emailsPrefill|socialproofs)/,
+				/relationships\/(peopleYouMayKnow|connectionsSummary)/,
+				/voyagerGrowthEmailDomainResolutions/
+			))
+		))
+	)),
+	/(play|clients\d)\.google\.com\/log/,
+	/((hackernoon|medium)\.com|medium\.freecodecamp\.org)(\/$|\/_\/(batch|oh-noes))/,
+	_seq(/medium\.com\//, _or(
+		/_\/fp\/css\/(fonts-base|main-notes\.bundle)/,
+		/media\/|_\/(batch|activity-status)|.*\/state\/location|me\//,
+		/_\/api\/(placements|users|.+\/(responsesStreams|responses|collections))/,
+		/.+\/(notes|quotes|upvotes)/
+	)),
+	/media\/\w{32}\?postId=/,
+	/bam\.nr-data\.net\/jserrors/,
+	/\/uconsole\/services\/metrics\/retrieveMultiGauges/,
+	/www\.google\.com\/coop\/cse\/brand/,
+	/\.google\.com\/(_s\/getsuggestions|profile\/userhistory)/,
+	/api\.github\.com\/(users\/\w+\/repos|user\/repos)/,
+	/www\.googleapis\.com\/urlshortener\/v1\/url/,
+	_seq(/support\.\w+\.com\//, _or(
+		/hub\/api\/rest\/(hubfeatures|settings|permissions)/,
+		/youtrack\/(error|rest\/(profile\/hasUnseenFeatures|user\/banner\/content|statistics))/
+	)),
+	/cdn\.ravenjs\.com/,
+	/www\.statcounter\.com\/counter\/counter\.js/,
+	/_Incapsula_Resource/,
+	/tripleclicks\.com\/(shared\/ajax\/notifications|games\/.*\/Badges)/,
+	/wp-includes\/js\/zxcvbn/,
+	/previewlg_\d+/,
+	/translate_a\/element\.js/,
+	/data\.jsdelivr\.com|cdn\.jsdelivr\.net/,
+	/mod_pagespeed_beacon/,
+	/assets\.alicdn\.com\/g\/alilog/,
+	/gstatic\.com\/support/,
+	_or(
+		/slant\.co\/.*(viewpoints|related|tags|activity).+format=json/,
+		/slant-api\.com\/(batch\/(rec-page|q-user-page)|.+entities\/user)/
+	),
+	/youtube\.com\/iframe_api|PlusAppUi/,
+	/\.sfimg\.com\/(shared\/ajax\/notifications|ajax\/chat)/,
+	/trustradius\.com\/locales\/resources\.json/,
+	/quora\.com\/.+(log_browser_|time_on_site_|m=(fetch_toggled_component|get_next_page))/,
+	/microsoft\.com\/app\/content/,
+	/app\.prosperworks\.com\/api\/.+\/split_flaps\/check/,
+	/\/\/twitter\.com/,
+	/ipinfo\.io/,
+	/rollbar\.com/
+);
+
+window._mediaIgnore = /dashboard\.tawk\.to/;
 
 window.toggleMedia = window.toggleMedia || function() {
 	toggleService.toggle('media', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexMedia))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(!channel.URI.spec.match(_toggleIgnore) && !channel.URI.spec.match(_mediaIgnore) && channel.URI.spec.match(_regexMedia)) {
+			_block(channel, "media");
+		}
 	}, {
 		title: "Media Blocked",
 		body: "Fonts, analytics etc will be blocked."
@@ -824,14 +581,45 @@ toggleMedia();
 
 // NO EXPIRY
 
+window._regexNoCache = _or(
+	/googleusercontent\.com/,
+	/youtrack\/(oauth|hub\/api\/rest\/oauth2\/auth)/,
+	/signin\.aws\.amazon\.com\/oauth/,
+	/127\.0\.0\.1|localhost|192\.168\./,
+	/(accounts|myaccount)\.google\.com/,
+	/accounts\.mobitel\.lk\/samlsso/,
+	/kotrivia\.appspot\.com/
+);
+window._regexDoCache = _or(
+	/mail\.google\.com\/mail\/u\/\d/,
+	/\w+\.slack\.com\/messages/,
+	/docs\.google\.com/,
+	/\.facebook\.com\/messages/,
+	/tripleclicks\.com/,
+	/linkedin\.com\/feed/
+);
+window._regexNoTouchCache = _or(
+	/lh\d\.googleusercontent\.com/,
+	/\d-bp\.blogspot\.com/,
+	/glyph\.medium\.com/
+);
+
 window.toggleNoExpiry = window.toggleNoExpiry || function() {
 	toggleService.toggleResponse('noexpiry', function(channel) {
-		channel.setResponseHeader("Expires", "", false);
-		channel.setResponseHeader("expires", "", false);
-		channel.setResponseHeader("cache-control", "", false);
-		channel.setResponseHeader("Cache-Control", "", false);
-		channel.setResponseHeader("pragma", "", false);
-		channel.setResponseHeader("Pragma", "", false);
+		if (channel.URI.spec.match(_regexNoTouchCache)) {
+			return;
+		}
+		if (channel.URI.spec.match(_regexNoCache)) {
+			channel.setResponseHeader("Cache-Control", "no-cache, no-store", false);
+		} else {
+//		} else if (channel.URI.spec.match(_regexDoCache)) {
+			channel.setResponseHeader("Expires", "", false);
+			channel.setResponseHeader("expires", "", false);
+			channel.setResponseHeader("cache-control", "", false);
+			channel.setResponseHeader("Cache-Control", "", false);
+			channel.setResponseHeader("pragma", "", false);
+			channel.setResponseHeader("Pragma", "", false);
+		}
 	}, {
 		title: "Expiry Off",
 		body: "Response expiry headers will be stripped."
@@ -846,12 +634,19 @@ toggleNoExpiry();
 
 // PERMANENT
 
-window._regexPermanent = /\b(clients\d+\.google\.com\/(voice|chat|invalidation)\/|\d+\.client-channel\.google\.com\/client-channel\/|hangouts\.google\.com\/webchat|notifications\.google\.com\/.*\/idv2)\b/;
+window._regexPermanent = _or(
+	/clients\d+\.google\.com\/(voice|chat|invalidation)/,
+	/\d+\.client-channel\.google\.com\/client-channel/,
+	/hangouts\.google\.com\/(hangouts|webchat|_\/scs)/,
+	/notifications\.google\.com\/.*\/idv2/,
+	/slack\.com\/beacon\/error/
+);
 
 window.togglePermanent = window.togglePermanent || function() {
 	toggleService.toggle('permanent', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexPermanent))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexPermanent)) {
+			_block(channel, "permanent");
+		}
 	}, {
 		title: "Permanents Blocked",
 		body: "Gmail/Hangouts resources etc will be blocked."
@@ -866,11 +661,22 @@ togglePermanent();
 
 // JS
 
-window._regexJS = /\b(\.js|_Incapsula_Resource|jsapi|ssl\.gstatic\.com\/accounts\/static\/_\/js\/|load\.php\?debug=false)\b/;
+window._regexJS = _or(
+	/\.jss?|\/js\/|_js/,
+	/_Incapsula_Resource/,
+	/jsapi/,
+	/(static|og|xjs)\/_\/js/,
+	/load\.php\?debug=false/,
+	/kb\.mozillazine\.org\/index\.php.+gen=js/,
+	/mail\.google\.com\/mail\/u\/\d(\/h\/_\/.+v=mjs|.+view=)/,
+	/jsi18n/
+);
+
 window.toggleJS = window.toggleJS || function() {
 	toggleService.toggle('js', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexJS))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexJS)) {
+			_block(channel, "js");
+		}
 	}, {
 		title: "JS Blocked",
 		body: "External JS will be blocked."
@@ -885,11 +691,19 @@ toggleJS();
 
 // CSS
 
-window._regexCSS = /\b(css\b|s\d\.wp\.com\/_static\/|ssl\.gstatic\.com\/accounts\/static\/_\/css\/|load\.php\?debug=false)/;
+window._regexCSS = _or(
+	/css/,
+	/s\d\.wp\.com\/_static/,
+	/\/_\/(css|ss)/,
+	/load\.php\?debug=false/,
+	/mail\.google\.com\/mail\/u\/\d\/h\/_\/.+v=ss/
+);
+
 window.toggleCSS = window.toggleCSS || function() {
 	toggleService.toggle('css', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexCSS))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexCSS)) {
+			_block(channel, "css");
+		}
 	}, {
 		title: "CSS Blocked",
 		body: "External CSS will be blocked."
@@ -906,11 +720,11 @@ toggleCSS();
 
 window.toggleRWOverwrite = window.toggleRWOverwrite || function() {
 	toggleService.toggle('rwOverwrite', function(channel) {}, {
-		title: "URL Rewriter - Overwrite Mode Off",
-		body: "URL rewrites will happen normally."
-	}, {
 		title: "URL Rewriter - Overwrite Mode",
 		body: "Mappings for visited URLs will be overwritten."
+	}, {
+		title: "URL Rewriter - Overwrite Mode Off",
+		body: "In-memory mappings will be ignored."
 	});
 };
 //toggleRWOverwrite();
@@ -932,11 +746,16 @@ window.toggleImages = function() {
 
 // YOUTRACK
 
-window._regexYT = /\/youtrack\/(_events\?|rest\/(statistics|profile\/hasUnseenFeatures))|hub\/api\/rest\/oauth2\/auth/;
+window._regexYT = _or(
+	/\/youtrack\/(_events\?|rest\/(statistics|profile\/hasUnseenFeatures))/,
+	/hub\/api\/rest\/oauth2\/auth/
+);
+
 window.toggleYT = window.toggleYT || function() {
 	toggleService.toggle('yt', function(channel) {
-		if(channel.URI.spec.match(_regexYT))
-			channel.cancel(Components.results.NS_BINDING_ABORTED);
+		if(channel.URI.spec.match(_regexYT)) {
+			_block(channel, "yt");
+		}
 	}, {
 		title: "YouTrack Blocked",
 		body: "Reconnection tries of YouTrack will be blocked."
@@ -945,7 +764,29 @@ window.toggleYT = window.toggleYT || function() {
 		body: "YouTrack reconnection restored."
 	});
 };
-toggleYT();
+//toggleYT();
+
+
+
+// NOREDIR
+
+window._noredirIgnore = _or(
+	/script\.google\.com\/macros\/s\//
+);
+
+window.toggleNoRedirect = window.toggleNoRedirect || function() {
+	toggleService.toggleResponse('noredirect', function(channel) {
+		if (!channel.URI.spec.match(_noredirIgnore) &&  channel.responseStatus > 299 && channel.responseStatus < 303) {
+			_block(channel, "noredirect");
+		}
+	}, {
+		title: "Redirect Off",
+		body: "30x responses will be blocked."
+	}, {
+		title: "Redirect Normal",
+		body: "30x responses will be redirected as usual."
+	});
+};
 
 
 
@@ -1020,6 +861,12 @@ var _mappings = {
 	],
 	105: [
 		{ctrl: true, shift: false, alt: true, handler: toggleImages}
+	],
+	114: [
+		{ctrl: true, shift: false, alt: true, handler: toggleNoRedirect}
+	],
+	115: [
+		{ctrl: true, shift: false, alt: true, handler: toggleSlack}
 	],
 	117: [
 		{ctrl: true, shift: false, alt: true, handler: toggleUA}
