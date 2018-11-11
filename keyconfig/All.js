@@ -20,6 +20,10 @@ window._join = function(sep, exprs) {
 	return exprs.map(_flat).join(sep);
 };
 
+window._isA = function(str, regex) {
+	return regex.test(str);
+};
+
 // provides toggle functions and status maintenance
 window.toggleService = {
 	a: window.__notifyElem,
@@ -28,7 +32,7 @@ window.toggleService = {
 	init: function(name, processFunc) {
 		try {
 			flagName = name + "Down";
-			if(window[flagName] == undefined) {
+			if (window[flagName] == undefined) {
 				window[name + "Obs"] = {
 					observe: function(aSubject, aTopic, aData) {
 						var channel = aSubject.QueryInterface(Ci.nsIHttpChannel);
@@ -52,7 +56,7 @@ window.toggleService = {
 			this.init(name, processFunc);
 			flagName = name + "Down";
 			obsName = name + "Obs";
-			if(window[flagName]) {
+			if (window[flagName]) {
 				this.s.removeObserver(window[obsName], event, false);
 				window[flagName] = false;
 				notify(false, alertOff.title, alertOff.body);
@@ -70,9 +74,9 @@ window.toggleService = {
 			k = Object.keys(window);
 			for(i in k) {
 				p = k[i].indexOf("Down");
-				if(p > 0 && k[i].length == p + 4) {
+				if (p > 0 && k[i].length == p + 4) {
 					name = k[i].substring(0, p);
-					if(window[k[i]]) {
+					if (window[k[i]]) {
 						alert(name + " enabled, please disable it");
 						return;
 					}
@@ -104,6 +108,7 @@ window.toggleService = {
 
 window._toggleIgnore = _seq(/^https?:\/\//, _or(
 	/127\.0\.0\.1|192\.168\.|localhost/,
+	/.*sigma.+\.s3-website-us-east-1\.amazonaws\.com/,
 	/unpkg\.com\/@?(blueprintjs|normalize\.css)/,
 	/raw\.githubusercontent\.com\/kristoferjoseph\/flexboxgrid\/master\/dist\/flexboxgrid\.min\.css/,
 	/cdnjs\.cloudflare\.com\/ajax\/libs\/(monaco-editor|require\.js)/,
@@ -129,7 +134,7 @@ window._toggleIgnore = _seq(/^https?:\/\//, _or(
 window._regexSlack = /slack\.com\/api\/api\.test/;
 window.toggleSlack = window.toggleSlack || function() {
 	toggleService.toggle('slack', function(channel) {
-		if(channel.URI.spec.match(_regexSlack)) {
+		if (_isA(channel.URI.spec, _regexSlack)) {
 			_block(channel, "slack");
 		}
 	}, {
@@ -162,6 +167,11 @@ toggleOffline();
 
 
 
+window._regexGAS = /script\.google\.com\/(sharing\/init|.+\/((bind|test|active)|exceptionService|gwt\/autocompleteService))/;
+window._regexOgs = /ogs\.google\.com/;
+window._regexGlog = /(play|clients\d)\.google\.com\/log/;
+window._regexSlackErr = /slack\.com\/beacon\/error/;
+
 // RW
 
 window._uriSvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
@@ -184,10 +194,12 @@ window._rwGAS = /script\.google\.com\/.+\/(googleappsscripts\.nocache\.js|.+\.ca
 
 window._rwAble = /\b(js|css|png)\b/;
 window._rwIgnore = _or(
+	_regexGAS,
 	/support\.\w+\.com\/youtrack\/issue/,
 	/(docs|drive|accounts)\.google\.com/,
 	/www\.googleapis\.com/,
 	/mail\.google\.com\/(mail\/u\/\d|_\/scs\/mail-static\/_\/js\/)/,
+	/hangouts\.google\.com\//,
 	/google\.\w+\/search\?/,
 	/recaptcha\/(api\.js|api2)/,
 	/ssl\.gstatic\.com\/accounts\/static\/_/,
@@ -231,52 +243,60 @@ window._redir = function(channel, url) {
 	channel.redirectTo(origUrl.mutate().setSpec(url).finalize());
 };
 
+window._debugIgnore = _or(
+	_regexGAS,
+	_regexOgs,
+	_regexGlog,
+	_regexSlack,
+	_regexSlackErr,
+	/hangouts\.google\.com\//
+);
 window._block = function(channel, cause) {
 	channel.cancel(Components.results.NS_BINDING_ABORTED);
-	console.debug(channel.URI.spec, "blocked by", cause);
+	!_isA(channel.URI.spec, _debugIgnore) && console.debug(channel.URI.spec, "blocked by", cause);
 };
 
 window._rwFunction = function(channel) {
 	var url = channel.URI.spec;
 	//console.debug(url, "start");
-	if (url.match(_toggleIgnore) || url.match(_rwIgnore)) {
+	if (_isA(url, _toggleIgnore) || _isA(url, _rwIgnore)) {
 		//console.debug(url, "ignored");
 		return;
 	}
-	if(url.match(_rwHackerStack))
+	if (_isA(url, _rwHackerStack))
 		_redir(channel, url.replace(/&?_=\d+/, '').replace(/\?$/, ''));
-	else if(url.match(_rwGAE))
+	else if (_isA(url, _rwGAE))
 		_redir(channel, url.replace(/\d+\-[0-9a-z]+\.\d+\./, ''));
-	else if(url.match(_rwGoogleDev)) {
+	else if (_isA(url, _rwGoogleDev)) {
 		var pos = url.indexOf("/", url.indexOf("_static"));
 		_redir(channel, url.substring(0, pos) + url.substring(url.indexOf("/", pos + 1)));
 	}
-	else if(url.match(_rwMDN))
+	else if (_isA(url, _rwMDN))
 		_redir(channel, url.replace(/[0-9a-z]{12}\.js/, 'js').replace(/[0-9a-z]{12}\.css/, 'css'));
-	else if(url.match(_rwGoogleIssues))
+	else if (_isA(url, _rwGoogleIssues))
 		_redir(channel, url.substring(0, url.lastIndexOf('?')));
-	else if(url.match(_rwBlogger))
+	else if (_isA(url, _rwBlogger))
 		_redir(channel, url.substring(0, url.indexOf("?")));
-	else if(url.match(_rwSpring))
+	else if (_isA(url, _rwSpring))
 		_redir(channel, url.replace(/-[a-z0-9]{32}\./, '.'));
-	else if(url.match(_rwImgSrch)) {
+	else if (_isA(url, _rwImgSrch)) {
 		var csi = url.indexOf('&csi=');
 		_redir(channel, (url.substring(0, csi) + url.substring(url.indexOf('&', csi + 1))).replace(/cidx:\d,_id:irc_imgrc\d,_pms:s/,
 			"cidx:2,_id:irc_imgrc2,_pms:s"));
 	}
-	else if(url.match(_rwReddit))
+	else if (_isA(url, _rwReddit))
 		_redir(channel, url.replace(/\.\S{11}\./, '.'));
-	else if(url.match(_rwMozMedia))
+	else if (_isA(url, _rwMozMedia))
 		_redir(channel, url.replace(/\.\S{12}\./, '.'));
-	else if(url.match(_rwAliExpress))
+	else if (_isA(url, _rwAliExpress))
 		_redir(channel, url.replace(/\.\S{8}\./, '.'));
-	else if(url.match(_rwYouTrackAuth))
+	else if (_isA(url, _rwYouTrackAuth))
 		_redir(channel, "http://127.0.0.1/youtrack/index.html" + url.substring(url.indexOf("#")));
-	else if(url.match(_rwStackCss))
+	else if (_isA(url, _rwStackCss))
 		_redir(channel, "https://cdn.sstatic.net/Sites/stackoverflow/mobile.css");
-	else if(url.match(_rwSlant))
+	else if (_isA(url, _rwSlant))
 		_redir(channel, url.replace(/\w{20,}\//, ''));
-	else if(url.match(_rwGAS))
+	else if (_isA(url, _rwGAS))
 		_redir(channel, url.replace(/\/a\/[^\/]+/, '').replace(/\/d\/[^\/]+/, ''));
 
 	params = url.match(_rwParams);
@@ -320,7 +340,7 @@ window._regexChannels = _or(
 
 window.toggleChannels = window.toggleChannels || function() {
 	toggleService.toggle('channels', function(channel) {
-		if(channel.URI.spec.match(_regexChannels)) {
+		if (_isA(channel.URI.spec, _regexChannels)) {
 			_block(channel, "channels");
 		}
 	}, {
@@ -340,6 +360,7 @@ toggleChannels();
 window._sitesDefault = _or(
 	/localhost:3000/,
 	/sigma\..+\.com/,
+	/bitbucket\.org/,
 	/cloudfront\.net/,
 	/console\.aws\.amazon\.com/,
 	/(docs|script)\.google\.com\/.+\/edit/,
@@ -383,19 +404,19 @@ window.toggleUA = window.toggleUA || function() {
 	toggleService.toggle('ua', function(channel) {
 		var url = channel.URI.spec;
 		var ua = _uaOptimal;
-		if (url.match(_sitesDefault)) {
+		if (_isA(url, _sitesDefault)) {
 			ua = navigator.userAgent;
-		} else if (url.match(_sitesVersioned)) {
+		} else if (_isA(url, _sitesVersioned)) {
 			ua = _uaVersioned;
-		} else if (url.match(_sitesMozFox)) {
+		} else if (_isA(url, _sitesMozFox)) {
 			ua = _uaMozFox;
-		} else if (url.match(_sitesGecko)) {
+		} else if (_isA(url, _sitesGecko)) {
 			ua = _uaGecko;
-		} else if (url.match(_sitesSafari)) {
+		} else if (_isA(url, _sitesSafari)) {
 			ua = _uaSafari;
-		} else if (url.match(_sitesAndroid)) {
+		} else if (_isA(url, _sitesAndroid)) {
 			ua = "Android";
-		} else if (url.match(_sitesAndroidMobile)) {
+		} else if (_isA(url, _sitesAndroidMobile)) {
 			ua = "Android Mobile";
 		}
 		channel.setRequestHeader("User-Agent", ua, false);
@@ -423,7 +444,7 @@ window._regexSocial = _or(
 
 window.toggleSocial = window.toggleSocial || function() {
 	toggleService.toggle('social', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexSocial)) {
+		if (!_isA(channel.URI.spec, _toggleIgnore) && _isA(channel.URI.spec, _regexSocial)) {
 			_block(channel, "social");
 		}
 	}, {
@@ -487,9 +508,9 @@ window._regexMedia = _or(
 	)),
 	/dev\.appboy\.com|(rt2|jen|collector)\.fiverr\.com/,
 	/player\.vimeo\.com\/video\/233549644/,
-	/script\.google\.com\/(sharing\/init|.+\/((bind|test|active)|exceptionService|gwt\/autocompleteService))/,
+	_regexGAS,
 	/\/image-s\d-\dx\.jpg/,
-	/ogs\.google\.com/,
+	_regexOgs,
 	/bitbucket\.org\/(emoji|\!api\/.*\/pullrequests\/\d+\/(participants|merge-restrictions|updates))/,
 	/google\.com\/.*\/jserror/,
 	_seq(/dropbox\.com\//, _or(
@@ -515,7 +536,7 @@ window._regexMedia = _or(
 			))
 		))
 	)),
-	/(play|clients\d)\.google\.com\/log/,
+	_regexGlog,
 	/((hackernoon|medium)\.com|medium\.freecodecamp\.org)(\/$|\/_\/(batch|oh-noes))/,
 	_seq(/medium\.com\//, _or(
 		/_\/fp\/css\/(fonts-base|main-notes\.bundle)/,
@@ -564,7 +585,7 @@ window._mediaIgnore = /dashboard\.tawk\.to/;
 
 window.toggleMedia = window.toggleMedia || function() {
 	toggleService.toggle('media', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && !channel.URI.spec.match(_mediaIgnore) && channel.URI.spec.match(_regexMedia)) {
+		if (!_isA(channel.URI.spec, _toggleIgnore) && !_isA(channel.URI.spec, _mediaIgnore) && _isA(channel.URI.spec, _regexMedia)) {
 			_block(channel, "media");
 		}
 	}, {
@@ -599,6 +620,7 @@ window._regexDoCache = _or(
 	/linkedin\.com\/feed/
 );
 window._regexNoTouchCache = _or(
+	/google\.\w+\/searchbyimage/,
 	/lh\d\.googleusercontent\.com/,
 	/\d-bp\.blogspot\.com/,
 	/glyph\.medium\.com/
@@ -606,13 +628,13 @@ window._regexNoTouchCache = _or(
 
 window.toggleNoExpiry = window.toggleNoExpiry || function() {
 	toggleService.toggleResponse('noexpiry', function(channel) {
-		if (channel.URI.spec.match(_regexNoTouchCache)) {
+		if (_isA(channel.URI.spec, _regexNoTouchCache)) {
 			return;
 		}
-		if (channel.URI.spec.match(_regexNoCache)) {
+		if (_isA(channel.URI.spec, _regexNoCache)) {
 			channel.setResponseHeader("Cache-Control", "no-cache, no-store", false);
 		} else {
-//		} else if (channel.URI.spec.match(_regexDoCache)) {
+//		} else if (_isA(channel.URI.spec, _regexDoCache)) {
 			channel.setResponseHeader("Expires", "", false);
 			channel.setResponseHeader("expires", "", false);
 			channel.setResponseHeader("cache-control", "", false);
@@ -639,12 +661,12 @@ window._regexPermanent = _or(
 	/\d+\.client-channel\.google\.com\/client-channel/,
 	/hangouts\.google\.com\/(hangouts|webchat|_\/scs)/,
 	/notifications\.google\.com\/.*\/idv2/,
-	/slack\.com\/beacon\/error/
+	_regexSlackErr
 );
 
 window.togglePermanent = window.togglePermanent || function() {
 	toggleService.toggle('permanent', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexPermanent)) {
+		if (!_isA(channel.URI.spec, _toggleIgnore) && _isA(channel.URI.spec, _regexPermanent)) {
 			_block(channel, "permanent");
 		}
 	}, {
@@ -662,7 +684,7 @@ togglePermanent();
 // JS
 
 window._regexJS = _or(
-	/\.jss?|\/js\/|_js/,
+	/\.jss?\b|\/js\/|_js/,
 	/_Incapsula_Resource/,
 	/jsapi/,
 	/(static|og|xjs)\/_\/js/,
@@ -674,7 +696,7 @@ window._regexJS = _or(
 
 window.toggleJS = window.toggleJS || function() {
 	toggleService.toggle('js', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexJS)) {
+		if (!_isA(channel.URI.spec, _toggleIgnore) && _isA(channel.URI.spec, _regexJS)) {
 			_block(channel, "js");
 		}
 	}, {
@@ -701,7 +723,7 @@ window._regexCSS = _or(
 
 window.toggleCSS = window.toggleCSS || function() {
 	toggleService.toggle('css', function(channel) {
-		if(!channel.URI.spec.match(_toggleIgnore) && channel.URI.spec.match(_regexCSS)) {
+		if (!_isA(channel.URI.spec, _toggleIgnore) && _isA(channel.URI.spec, _regexCSS)) {
 			_block(channel, "css");
 		}
 	}, {
@@ -753,7 +775,7 @@ window._regexYT = _or(
 
 window.toggleYT = window.toggleYT || function() {
 	toggleService.toggle('yt', function(channel) {
-		if(channel.URI.spec.match(_regexYT)) {
+		if (_isA(channel.URI.spec, _regexYT)) {
 			_block(channel, "yt");
 		}
 	}, {
@@ -771,12 +793,15 @@ window.toggleYT = window.toggleYT || function() {
 // NOREDIR
 
 window._noredirIgnore = _or(
-	/script\.google\.com\/macros\/s\//
+	/script\.google\.com\/macros\/s\//,
+	/www\.dialog\.lk\/(dlg\/|)browse\/reloadPayBillOnline/,
+	/mail\.google\.com\/mail\/u\/\d\/\?.+view=fimg/,
+	/accounts\.google\.com\/o\/oauth2\//
 );
 
 window.toggleNoRedirect = window.toggleNoRedirect || function() {
 	toggleService.toggleResponse('noredirect', function(channel) {
-		if (!channel.URI.spec.match(_noredirIgnore) &&  channel.responseStatus > 299 && channel.responseStatus < 303) {
+		if (!_isA(channel.URI.spec, _noredirIgnore) &&  channel.responseStatus > 299 && channel.responseStatus < 303) {
 			_block(channel, "noredirect");
 		}
 	}, {
@@ -803,7 +828,7 @@ window.cHeader = function(channel, key) {
 window.toggleXhrOnline = window.toggleXhrOnline || function() {
 	toggleService.toggle('xhronline', function(channel) {
 		url = channel.URI.spec;
-		if(_offline.getAttribute("checked") == "true" && 
+		if (_offline.getAttribute("checked") == "true" &&
 			(url.indexOf("trello") > 0 && (cHeader(channel, "X-Requested-With") || cHeader(channel, "X-Trello-Client-Version"))) ||
 			url.indexOf("gwt/autocompleteService") > 0 || url.indexOf("gwt/ideService") > 0)
 			toggleOffline();
@@ -888,7 +913,7 @@ window.addEventListener("keypress", function(event) {
 
 /*
 // init and enable toggles at first call
-if(!window.toggleJS) {
+if (!window.toggleJS) {
 	// JS, CSS, rewrite, media, social, channels, rewrite-overwrite, no-expiry, permanent-blocked
 	alt = [true, false, true, true, false, true, true, true];
 	ctrl = [true, true, false, true, true, true, true, true];
