@@ -326,6 +326,7 @@ toggleRW();
 // CHANNELS
 
 window._regexChannels = _or(
+	/medium\.com\/p\/.+\/deltas/,
 	/mpmulti-.+\.slack-msgs\.com/,
 	/slack\.com\/(templates\.php\?|api\/api\.test)/,
 	/(client-channel|clients\d|hangouts)\.google\.com/,
@@ -361,6 +362,7 @@ window._sitesDefault = _or(
 	/localhost:3000/,
 	/sigma\..+\.com/,
 	/bitbucket\.org/,
+	/medium\.com\/p\/import-story/,
 	/cloudfront\.net/,
 	/console\.aws\.amazon\.com/,
 	/(docs|script)\.google\.com\/.+\/edit/,
@@ -510,7 +512,6 @@ window._regexMedia = _or(
 	/player\.vimeo\.com\/video\/233549644/,
 	_regexGAS,
 	/\/image-s\d-\dx\.jpg/,
-	_regexOgs,
 	/bitbucket\.org\/(emoji|\!api\/.*\/pullrequests\/\d+\/(participants|merge-restrictions|updates))/,
 	/google\.com\/.*\/jserror/,
 	_seq(/dropbox\.com\//, _or(
@@ -536,7 +537,6 @@ window._regexMedia = _or(
 			))
 		))
 	)),
-	_regexGlog,
 	/((hackernoon|medium)\.com|medium\.freecodecamp\.org)(\/$|\/_\/(batch|oh-noes))/,
 	_seq(/medium\.com\//, _or(
 		/_\/fp\/css\/(fonts-base|main-notes\.bundle)/,
@@ -544,6 +544,7 @@ window._regexMedia = _or(
 		/_\/api\/(placements|users|.+\/(responsesStreams|responses|collections))/,
 		/.+\/(notes|quotes|upvotes)/
 	)),
+	/cdn-images-\d\.medium\.com\/proxy\//,
 	/media\/\w{32}\?postId=/,
 	/bam\.nr-data\.net\/jserrors/,
 	/\/uconsole\/services\/metrics\/retrieveMultiGauges/,
@@ -578,6 +579,7 @@ window._regexMedia = _or(
 	/app\.prosperworks\.com\/api\/.+\/split_flaps\/check/,
 	/\/\/twitter\.com/,
 	/ipinfo\.io/,
+	/.+\.qualtrics\.com/,
 	/rollbar\.com/
 );
 
@@ -622,6 +624,7 @@ window._regexDoCache = _or(
 window._regexNoTouchCache = _or(
 	/google\.\w+\/searchbyimage/,
 	/lh\d\.googleusercontent\.com/,
+	/alicdn\.com/,
 	/\d-bp\.blogspot\.com/,
 	/glyph\.medium\.com/
 );
@@ -661,6 +664,8 @@ window._regexPermanent = _or(
 	/\d+\.client-channel\.google\.com\/client-channel/,
 	/hangouts\.google\.com\/(hangouts|webchat|_\/scs)/,
 	/notifications\.google\.com\/.*\/idv2/,
+	_regexOgs,
+	_regexGlog,
 	_regexSlackErr
 );
 
