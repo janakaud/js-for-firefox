@@ -14,6 +14,11 @@ setTimeout(function(e) {
 		if (start > 0) {
 			var end = url.indexOf('&');
 			url = decodeURIComponent(url.substring(start + 6, end));
+			start = url.indexOf('url=');
+			if (start > 0) {
+				end = url.indexOf('&');
+				url = decodeURIComponent(url.substring(start + 4, end));
+			}
 			document.links[i].href = url;
 		}
 	}

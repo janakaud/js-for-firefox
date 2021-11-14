@@ -1,21 +1,22 @@
 function find(o, cur, name) {
-	if (stack.indexOf(o) >= 0) {
-		return false;
-	}
-	stack.push(o);
-	names.push(cur);
+    if ((stack.length > 0 && o instanceof Window) || o instanceof Document || o instanceof Element || stack.indexOf(o) >= 0) {
+        return false;
+    }
+    stack.push(o);
+    names.push(cur);
 try {
-	for (k in o) {
-		if (k == name || find(o[k], k, name)) {
-			console.log(names);
-			stack.pop();
-			names.pop();
-			return true;
-		}
-	}
+    for (k in o) {
+        if (k.indexOf(name) > -1 || find(o[k], k, name)) {
+            console.log(k, names);
+            stack.pop();
+            names.pop();
+            return true;
+        }
+    }
 } catch (e) {}
-	stack.pop();
-	names.pop();
-	return false;
+    stack.pop();
+    names.pop();
+    return false;
 }
-stack = [document]; names = ["document"]; find(window, "window", "ajaxSetup")
+stack = []; names = [];
+find(window, "window", "xsrf")
